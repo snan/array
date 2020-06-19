@@ -1,6 +1,7 @@
 package array.builtins
 
 import array.*
+import kotlinx.coroutines.delay
 
 class TypeofFunction : APLFunctionDescriptor {
     class TypeofFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
@@ -40,7 +41,7 @@ class SleepFunction : APLFunctionDescriptor {
     class SleepFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
         override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val sleepTimeSeconds = a.ensureNumber(pos).asDouble()
-            sleepMillis((sleepTimeSeconds * 1000).toLong())
+            delay((sleepTimeSeconds * 1000).toLong())
             return sleepTimeSeconds.makeAPLNumber()
         }
     }

@@ -4,8 +4,11 @@ import array.builtins.compareAPLArrays
 import array.rendertext.encloseInBox
 import array.rendertext.renderNullValue
 import array.rendertext.renderStringValue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 
 enum class APLValueType(val typeName: String) {
     INTEGER("integer"),
@@ -211,7 +214,22 @@ abstract class APLArray : APLValue {
         return when {
             v is APLSingleValue -> v
             v.rank == 0 -> EnclosedAPLValue(v.valueAt(0).collapseInt())
-            else -> APLArrayImpl.make(v.dimensions) { i -> v.valueAt(i).collapseInt() }
+            else -> collapseParallel(v)
+        }
+    }
+
+    private suspend fun collapseParallel(v: APLValue): APLValue {
+        val length = v.dimensions.contentSize()
+        val deferredValues = Array(length) { i ->
+            val deferred = CompletableDeferred<APLValue>()
+            GlobalScope.launch {
+                val result = v.valueAt(i)
+                deferred.complete(result)
+            }.start()
+            deferred
+        }
+        return APLArrayImpl.make(v.dimensions) { i ->
+            deferredValues[i].await()
         }
     }
 

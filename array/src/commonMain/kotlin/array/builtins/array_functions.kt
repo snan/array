@@ -166,7 +166,7 @@ class DiscloseAPLFunction : APLFunctionDescriptor {
                 }
                 val index = if (d.size == 0) {
                     if (curr.dimensions.size != 1) {
-                        throw InvalidDimensionsException("Mismatched dimensions for selection")
+                        throw InvalidDimensionsException("Mismatched dimensions for selection", pos)
                     }
                     v.ensureNumber(pos).asInt()
                 } else {

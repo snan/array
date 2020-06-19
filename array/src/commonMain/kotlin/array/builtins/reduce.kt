@@ -1,6 +1,8 @@
 package array.builtins
 
 import array.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 
 class ReduceResult1Arg(
     val context: RuntimeContext,
@@ -137,7 +139,7 @@ class ReduceOpFirstAxis : APLOperatorOneArg {
 class ScanResult1Arg(val context: RuntimeContext, val fn: APLFunction, val a: APLValue, axis: Int) : APLArray() {
     override val dimensions = a.dimensions
 
-    private val cachedResults = makeAtomicRefArray<APLValue>(dimensions.contentSize())
+    private val cachedResults = makeAtomicRefArray<Deferred<APLValue>>(dimensions.contentSize())
     private val axisActionFactors = AxisActionFactors(dimensions, axis)
 
     override suspend fun valueAt(p: Int): APLValue {
@@ -147,12 +149,25 @@ class ScanResult1Arg(val context: RuntimeContext, val fn: APLFunction, val a: AP
             while (true) {
                 val index = axisActionFactors.indexForAxis(high, low, currIndex)
                 if (currIndex == 0) {
-                    leftValue = cachedResults.checkOrUpdate(index) { a.valueAt(index) }
+                    val cached = cachedResults[index]
+                    leftValue = if (cached != null) {
+                        cached.await()
+                    } else {
+                        val newValue = CompletableDeferred<APLValue>()
+                        val oldCached = cachedResults.compareAndExchange(index, null, newValue)
+                        if (oldCached == null) {
+                            val result = a.valueAt(index)
+                            newValue.complete(result)
+                            result
+                        } else {
+                            oldCached.await()
+                        }
+                    }
                     break
                 } else {
                     val cachedVal = cachedResults[index]
                     if (cachedVal != null) {
-                        leftValue = cachedVal
+                        leftValue = cachedVal.await()
                         break
                     }
                 }
@@ -162,7 +177,20 @@ class ScanResult1Arg(val context: RuntimeContext, val fn: APLFunction, val a: AP
             if (currIndex < axisCoord) {
                 for (i in (currIndex + 1)..axisCoord) {
                     val index = axisActionFactors.indexForAxis(high, low, i)
-                    leftValue = cachedResults.checkOrUpdate(index) { fn.eval2Arg(context, leftValue, a.valueAt(index), null).collapse() }
+                    val cached = cachedResults[index]
+                    leftValue = if (cached != null) {
+                        cached.await()
+                    } else {
+                        val newValue = CompletableDeferred<APLValue>()
+                        val oldCached = cachedResults.compareAndExchange(index, null, newValue)
+                        if (oldCached == null) {
+                            val result = fn.eval2Arg(context, leftValue, a.valueAt(index), null).collapse()
+                            newValue.complete(result)
+                            result
+                        } else {
+                            oldCached.await()
+                        }
+                    }
                 }
             }
 
@@ -174,6 +202,7 @@ class ScanResult1Arg(val context: RuntimeContext, val fn: APLFunction, val a: AP
 abstract class ScanFunctionImpl(fnDescriptor: APLFunctionDescriptor, val operatorAxis: Instruction?, pos: Position) : APLFunction(pos) {
     val fn = fnDescriptor.make(pos)
 
+    @Suppress("IfThenToSafeAccess")
     override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         val axisParam = if (operatorAxis != null) operatorAxis.evalWithContext(context).ensureNumber(pos).asInt() else null
         return if (a.rank == 0) {

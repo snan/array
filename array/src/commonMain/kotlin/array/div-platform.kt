@@ -19,7 +19,7 @@ interface MPAtomicRefArray<T> {
         val v = compareAndExchange(index, null, update)
         return if (v == null) update else v
     }
-}
+    }
 
 expect fun <T> makeAtomicRefArray(size: Int): MPAtomicRefArray<T>
 
