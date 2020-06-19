@@ -1,5 +1,6 @@
 package array
 
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicReferenceArray
 
 actual fun sleepMillis(time: Long) {
@@ -24,32 +25,8 @@ actual fun <T> makeAtomicRefArray(size: Int): MPAtomicRefArray<T> {
     return JvmMPAtomicRefArray(size)
 }
 
-class JavaThreadWrapper(val thread: Thread) : ThreadWrapper {
-    override fun join() {
-        thread.join()
+actual fun <T> runBlockingCompat(fn: suspend () -> T): T {
+    return runBlocking {
+        fn()
     }
-}
-
-actual fun runInThread(name: String, fn: () -> Unit): ThreadWrapper {
-    val thread = object : Thread(name) {
-        override fun run() {
-            fn()
-        }
-    }
-    thread.start()
-    return JavaThreadWrapper(thread)
-}
-
-private class JVMLock : MPLock {
-    private val lock = Object()
-
-    override fun <T> withLockHeld(fn: () -> T): T {
-        synchronized(lock) {
-            return fn()
-        }
-    }
-}
-
-actual fun makeLock(): MPLock {
-    return JVMLock()
 }

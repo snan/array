@@ -6,24 +6,24 @@ import kotlin.test.assertTrue
 
 class ListTest : APLTest() {
     @Test
-    fun parseList() {
+    fun parseList() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1;2;3")
         assertListContent(listOf(1, 2, 3), result)
     }
 
     @Test
-    fun parseListWithStatements() {
+    fun parseListWithStatements() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1+2;2+3;3 ◊ 5+1+1;6+1+1;7;8")
         assertListContent(listOf(7, 8, 7, 8), result)
     }
 
     @Test
-    fun parseWithExpressions() {
+    fun parseWithExpressions() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1+2;3+4")
         assertListContent(listOf(3, 7), result)
     }
 
-    private fun assertListContent(expected: List<Any>, list: APLValue) {
+    private suspend fun assertListContent(expected: List<Any>, list: APLValue) {
         assertTrue(list is APLList, "actual type: ${list::class.qualifiedName}")
         assertEquals(expected.size, list.listSize())
         expected.forEachIndexed { index, item ->

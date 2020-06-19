@@ -73,7 +73,7 @@ private fun encloseString(s: String2D): String {
     return s.encloseInBox().asString()
 }
 
-private fun encloseNDim(value: APLValue, renderLabels: Boolean = true): String {
+private suspend fun encloseNDim(value: APLValue, renderLabels: Boolean = true): String {
     val dimensions = value.dimensions
     val multipliers = dimensions.multipliers()
     val renderedValues = (0 until value.size).map { index -> String2D(value.valueAt(index).formatted(FormatStyle.PRETTY)) }
@@ -330,7 +330,7 @@ fun rightJustified(dest: MutableList<String>, s: List<String>, width: Int) {
     dest.addAll(s)
 }
 
-fun renderStringValue(value: APLValue, style: FormatStyle): String {
+suspend fun renderStringValue(value: APLValue, style: FormatStyle): String {
     return when (style) {
         FormatStyle.PLAIN -> renderStringValueOptionalQuotes(value, false)
         FormatStyle.PRETTY -> renderStringValueOptionalQuotes(value, true)
@@ -338,7 +338,7 @@ fun renderStringValue(value: APLValue, style: FormatStyle): String {
     }
 }
 
-private fun renderStringValueOptionalQuotes(value: APLValue, showQuotes: Boolean): String {
+private suspend fun renderStringValueOptionalQuotes(value: APLValue, showQuotes: Boolean): String {
     val buf = StringBuilder()
     if (showQuotes) {
         buf.append("\"")
@@ -361,7 +361,7 @@ fun renderNullValue(): String {
     return "⍬"
 }
 
-fun encloseInBox(value: APLValue): String {
+suspend fun encloseInBox(value: APLValue): String {
     return when {
         value is APLSingleValue -> value.formatted(FormatStyle.PRETTY)
         value.rank == 0 -> encloseString(String2D(value.valueAt(0).formatted(FormatStyle.PRETTY)))

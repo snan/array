@@ -4,6 +4,8 @@ import array.builtins.compareAPLArrays
 import array.rendertext.encloseInBox
 import array.rendertext.renderNullValue
 import array.rendertext.renderStringValue
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 enum class APLValueType(val typeName: String) {
     INTEGER("integer"),
@@ -64,24 +66,24 @@ interface APLValue {
     val rank: Int
         get() = dimensions.size
 
-    fun valueAt(p: Int): APLValue
-    fun valueAtWithScalarCheck(p: Int): APLValue = valueAt(p)
+    suspend fun valueAt(p: Int): APLValue
+    suspend fun valueAtWithScalarCheck(p: Int): APLValue = valueAt(p)
     val size: Int
         get() = dimensions.contentSize()
 
-    fun formatted(style: FormatStyle = FormatStyle.PRETTY): String
-    fun collapseInt(): APLValue
+    suspend fun formatted(style: FormatStyle = FormatStyle.PRETTY): String
+    suspend fun collapseInt(): APLValue
     fun isScalar(): Boolean = rank == 0
     fun defaultValue(): APLValue = APLLONG_0
-    fun arrayify(): APLValue
-    fun unwrapDeferredValue(): APLValue = this
-    fun compareEquals(reference: APLValue): Boolean
-    fun compare(reference: APLValue, pos: Position? = null): Int =
+    suspend fun arrayify(): APLValue
+    suspend fun unwrapDeferredValue(): APLValue = this
+    suspend fun compareEquals(reference: APLValue): Boolean
+    suspend fun compare(reference: APLValue, pos: Position? = null): Int =
         throw IncompatibleTypeException("Comparison not implemented for objects of type ${this.aplValueType.typeName}", pos)
 
     val labels: DimensionLabels? get() = null
 
-    fun collapse(): APLValue {
+    suspend fun collapse(): APLValue {
         val l = labels
         val v = collapseInt()
         return if (l == null) {
@@ -101,9 +103,9 @@ interface APLValue {
      * In other words, if two instances of [APLValue] are to be considered equivalent, then the objects returned
      * by this method should be the same when compared using [equals] and return the same value from [hashCode].
      */
-    fun makeKey(): Any
+    suspend fun makeKey(): Any
 
-    fun singleValueOrError(): APLValue {
+    suspend fun singleValueOrError(): APLValue {
         return when {
             rank == 0 -> this
             size == 1 -> valueAt(0)
@@ -111,7 +113,7 @@ interface APLValue {
         }
     }
 
-    fun ensureNumber(pos: Position? = null): APLNumber {
+    suspend fun ensureNumber(pos: Position? = null): APLNumber {
         val v = unwrapDeferredValue()
         if (v == this) {
             throw IncompatibleTypeException("Value $this is not a numeric value (type=${aplValueType.typeName})", pos)
@@ -120,7 +122,7 @@ interface APLValue {
         }
     }
 
-    fun ensureSymbol(pos: Position? = null): APLSymbol {
+    suspend fun ensureSymbol(pos: Position? = null): APLSymbol {
         val v = unwrapDeferredValue()
         if (v == this) {
             throw IncompatibleTypeException("Value $this is not a symbol (type=${aplValueType.typeName})", pos)
@@ -129,7 +131,7 @@ interface APLValue {
         }
     }
 
-    fun ensureList(pos: Position? = null): APLList {
+    suspend fun ensureList(pos: Position? = null): APLList {
         val v = unwrapDeferredValue()
         if (v == this) {
             throw IncompatibleTypeException("Value $this is not a list (type=${aplValueType.typeName})", pos)
@@ -138,13 +140,13 @@ interface APLValue {
         }
     }
 
-    fun toIntArray(pos: Position): IntArray {
+    suspend fun toIntArray(pos: Position): IntArray {
         return IntArray(size) { i ->
             valueAt(i).ensureNumber(pos).asInt()
         }
     }
 
-    fun asBoolean(): Boolean {
+    suspend fun asBoolean(): Boolean {
         val v = unwrapDeferredValue()
         return if (v == this) {
             true
@@ -154,7 +156,7 @@ interface APLValue {
     }
 }
 
-inline fun APLValue.iterateMembers(fn: (APLValue) -> Unit) {
+suspend inline fun APLValue.iterateMembers(fn: (APLValue) -> Unit) {
     if (rank == 0) {
         fn(this)
     } else {
@@ -164,7 +166,7 @@ inline fun APLValue.iterateMembers(fn: (APLValue) -> Unit) {
     }
 }
 
-inline fun APLValue.iterateMembersWithPosition(fn: (APLValue, Int) -> Unit) {
+suspend inline fun APLValue.iterateMembersWithPosition(fn: (APLValue, Int) -> Unit) {
     if (rank == 0) {
         fn(this, 0)
     } else {
@@ -174,17 +176,16 @@ inline fun APLValue.iterateMembersWithPosition(fn: (APLValue, Int) -> Unit) {
     }
 }
 
-fun APLValue.membersSequence(): Sequence<APLValue> {
+suspend fun APLValue.membersSequence(): Flow<APLValue> {
     val v = unwrapDeferredValue()
     return if (v is APLSingleValue) {
-        sequenceOf(v)
+        flow {
+            emit(v)
+        }
     } else {
-        Sequence {
-            val length = v.size
-            var index = 0
-            object : Iterator<APLValue> {
-                override fun hasNext() = index < length
-                override fun next() = v.valueAt(index++)
+        flow {
+            repeat(v.size) { i ->
+                emit(v.valueAt(i))
             }
         }
     }
@@ -192,20 +193,20 @@ fun APLValue.membersSequence(): Sequence<APLValue> {
 
 abstract class APLSingleValue : APLValue {
     override val dimensions get() = emptyDimensions()
-    override fun valueAt(p: Int) = throw APLIndexOutOfBoundsException("Reading index ${p} from scalar")
-    override fun valueAtWithScalarCheck(p: Int) =
+    override suspend fun valueAt(p: Int) = throw APLIndexOutOfBoundsException("Reading index ${p} from scalar")
+    override suspend fun valueAtWithScalarCheck(p: Int) =
         if (p == 0) this else throw APLIndexOutOfBoundsException("Reading at non-zero index ${p} from scalar")
 
     override val size get() = 1
     override val rank get() = 0
-    override fun collapseInt() = this
-    override fun arrayify() = APLArrayImpl.make(dimensionsOfSize(1)) { this }
+    override suspend fun collapseInt() = this
+    override suspend fun arrayify() = APLArrayImpl.make(dimensionsOfSize(1)) { this }
 }
 
 abstract class APLArray : APLValue {
     override val aplValueType: APLValueType get() = APLValueType.ARRAY
 
-    override fun collapseInt(): APLValue {
+    override suspend fun collapseInt(): APLValue {
         val v = unwrapDeferredValue()
         return when {
             v is APLSingleValue -> v
@@ -214,16 +215,16 @@ abstract class APLArray : APLValue {
         }
     }
 
-    override fun formatted(style: FormatStyle) =
+    override suspend fun formatted(style: FormatStyle) =
         when (style) {
             FormatStyle.PLAIN -> arrayAsString(this, FormatStyle.PLAIN)
             FormatStyle.PRETTY -> arrayAsString(this, FormatStyle.PRETTY)
             FormatStyle.READABLE -> arrayToAPLFormat(this)
         }
 
-    override fun arrayify() = if (rank == 0) APLArrayImpl.make(dimensionsOfSize(1)) { valueAt(0) } else this
+    override suspend fun arrayify() = if (rank == 0) APLArrayImpl.make(dimensionsOfSize(1)) { valueAt(0) } else this
 
-    override fun compareEquals(reference: APLValue): Boolean {
+    override suspend fun compareEquals(reference: APLValue): Boolean {
         val u = this.unwrapDeferredValue()
         if (u is APLSingleValue) {
             return u.compareEquals(reference)
@@ -243,7 +244,7 @@ abstract class APLArray : APLValue {
         }
     }
 
-    override fun compare(reference: APLValue, pos: Position?): Int {
+    override suspend fun compare(reference: APLValue, pos: Position?): Int {
         return when {
             isScalar() && reference.isScalar() -> {
                 return if (reference is APLSingleValue) {
@@ -263,29 +264,31 @@ abstract class APLArray : APLValue {
         }
     }
 
-    override fun makeKey() = object {
-        override fun equals(other: Any?): Boolean {
-            return other is APLArray && compare(other) == 0
+    override suspend fun makeKey(): Any {
+        var curr = 0
+        dimensions.dimensions.forEach { dim ->
+            curr = (curr * 63) xor dim
+        }
+        iterateMembers { v ->
+            curr = (curr * 63) xor v.makeKey().hashCode()
         }
 
-        override fun hashCode(): Int {
-            var curr = 0
-            dimensions.dimensions.forEach { dim ->
-                curr = (curr * 63) xor dim
+        return object {
+            override fun equals(other: Any?): Boolean {
+                TODO("Broken due to suspend")
+                //return other is APLArray && compare(other) == 0
             }
-            membersSequence().forEach { v ->
-                curr = (curr * 63) xor v.makeKey().hashCode()
-            }
-            return curr
+
+            override fun hashCode() = curr
         }
     }
 }
 
 class LabelledArray(val value: APLValue, override val labels: DimensionLabels) : APLArray() {
     override val dimensions = value.dimensions
-    override fun valueAt(p: Int) = value.valueAt(p)
+    override suspend fun valueAt(p: Int) = value.valueAt(p)
 
-    override fun collapseInt(): APLValue {
+    override suspend fun collapseInt(): APLValue {
         return value.collapseInt()
     }
 
@@ -300,11 +303,11 @@ class APLMap(val content: ImmutableMap<Any, APLValue>) : APLSingleValue() {
     override val aplValueType get() = APLValueType.MAP
     override val dimensions = emptyDimensions()
 
-    override fun formatted(style: FormatStyle): String {
+    override suspend fun formatted(style: FormatStyle): String {
         return "map[size=${content.size}]"
     }
 
-    override fun compareEquals(reference: APLValue): Boolean {
+    override suspend fun compareEquals(reference: APLValue): Boolean {
         if (reference !is APLMap) {
             return false
         }
@@ -320,15 +323,15 @@ class APLMap(val content: ImmutableMap<Any, APLValue>) : APLSingleValue() {
         return true
     }
 
-    override fun makeKey(): Any {
+    override suspend fun makeKey(): Any {
         return content
     }
 
-    fun lookupValue(key: APLValue): APLValue {
+    suspend fun lookupValue(key: APLValue): APLValue {
         return content[key.makeKey()] ?: APLNullValue()
     }
 
-    fun updateValue(key: APLValue, value: APLValue): APLMap {
+    suspend fun updateValue(key: APLValue, value: APLValue): APLMap {
         return APLMap(content.copyAndPut(key.makeKey(), value))
     }
 
@@ -342,11 +345,11 @@ class APLList(val elements: List<APLValue>) : APLValue {
 
     override val dimensions get() = emptyDimensions()
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         TODO("not implemented")
     }
 
-    override fun formatted(style: FormatStyle): String {
+    override suspend fun formatted(style: FormatStyle): String {
         val buf = StringBuilder()
         var first = true
         for (v in elements) {
@@ -360,15 +363,15 @@ class APLList(val elements: List<APLValue>) : APLValue {
         return buf.toString()
     }
 
-    override fun collapseInt() = this
+    override suspend fun collapseInt() = this
 
-    override fun arrayify(): APLValue {
+    override suspend fun arrayify(): APLValue {
         TODO("not implemented")
     }
 
-    override fun ensureList(pos: Position?) = this
+    override suspend fun ensureList(pos: Position?) = this
 
-    override fun compareEquals(reference: APLValue): Boolean {
+    override suspend fun compareEquals(reference: APLValue): Boolean {
         if (reference !is APLList) {
             return false
         }
@@ -383,8 +386,9 @@ class APLList(val elements: List<APLValue>) : APLValue {
         return true
     }
 
-    override fun makeKey(): Any {
-        return ComparableList<Any>().apply { addAll(elements.map(APLValue::makeKey)) }
+    override suspend fun makeKey(): Any {
+        TODO("Disabled due to suspend")
+        //return ComparableList<Any>().apply { addAll(elements.map(APLValue::makeKey)) }
     }
 
     fun listSize() = elements.size
@@ -411,7 +415,7 @@ class ComparableList<T> : MutableList<T> by ArrayList<T>() {
     }
 }
 
-private fun arrayToAPLFormat(value: APLArray): String {
+private suspend fun arrayToAPLFormat(value: APLArray): String {
     val v = value.collapse()
     return if (isStringValue(v)) {
         renderStringValue(v, FormatStyle.READABLE)
@@ -420,7 +424,7 @@ private fun arrayToAPLFormat(value: APLArray): String {
     }
 }
 
-private fun arrayToAPLFormatStandard(value: APLArray): String {
+private suspend fun arrayToAPLFormatStandard(value: APLArray): String {
     val buf = StringBuilder()
     val dimensions = value.dimensions
     if (dimensions.size == 0) {
@@ -454,7 +458,7 @@ fun isNullValue(value: APLValue): Boolean {
     return dimensions.size == 1 && dimensions[0] == 0
 }
 
-fun isStringValue(value: APLValue): Boolean {
+suspend fun isStringValue(value: APLValue): Boolean {
     val dimensions = value.dimensions
     if (dimensions.size == 1) {
         for (i in 0 until value.size) {
@@ -469,7 +473,7 @@ fun isStringValue(value: APLValue): Boolean {
     }
 }
 
-fun arrayAsStringValue(array: APLValue, pos: Position? = null): String {
+suspend fun arrayAsStringValue(array: APLValue, pos: Position? = null): String {
     val dimensions = array.dimensions
     if (dimensions.size != 1) {
         throw IncompatibleTypeException("Argument is not a string", pos)
@@ -487,7 +491,7 @@ fun arrayAsStringValue(array: APLValue, pos: Position? = null): String {
     return buf.toString()
 }
 
-fun arrayAsString(array: APLValue, style: FormatStyle): String {
+suspend fun arrayAsString(array: APLValue, style: FormatStyle): String {
     val v = array.collapse() // This is to prevent multiple evaluations during printing
     return when {
         isNullValue(v) -> renderNullValue()
@@ -501,7 +505,7 @@ class ConstantArray(
     private val value: APLValue
 ) : APLArray() {
 
-    override fun valueAt(p: Int) = value
+    override suspend fun valueAt(p: Int) = value
 }
 
 class APLArrayImpl(
@@ -509,7 +513,7 @@ class APLArrayImpl(
     private val values: Array<APLValue>
 ) : APLArray() {
 
-    override fun valueAt(p: Int) = values[p]
+    override suspend fun valueAt(p: Int) = values[p]
     override fun toString() = Arrays.toString(values)
 
     companion object {
@@ -524,7 +528,7 @@ class EnclosedAPLValue(val value: APLValue) : APLArray() {
     override val dimensions: Dimensions
         get() = emptyDimensions()
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         if (p != 0) {
             throw APLIndexOutOfBoundsException("Attempt to read from a non-zero index ")
         }
@@ -535,15 +539,15 @@ class EnclosedAPLValue(val value: APLValue) : APLArray() {
 class APLChar(val value: Int) : APLSingleValue() {
     override val aplValueType: APLValueType get() = APLValueType.CHAR
     fun asString() = charToString(value)
-    override fun formatted(style: FormatStyle) = when (style) {
+    override suspend fun formatted(style: FormatStyle) = when (style) {
         FormatStyle.PLAIN -> charToString(value)
         FormatStyle.PRETTY -> "@${charToString(value)}"
         FormatStyle.READABLE -> "@${charToString(value)}"
     }
 
-    override fun compareEquals(reference: APLValue) = reference is APLChar && value == reference.value
+    override suspend fun compareEquals(reference: APLValue) = reference is APLChar && value == reference.value
 
-    override fun compare(reference: APLValue, pos: Position?): Int {
+    override suspend fun compare(reference: APLValue, pos: Position?): Int {
         if (reference is APLChar) {
             return value.compareTo(reference.value)
         } else {
@@ -553,7 +557,7 @@ class APLChar(val value: Int) : APLSingleValue() {
 
     override fun toString() = "APLChar['${asString()}' 0x${value.toString(16)}]"
 
-    override fun makeKey() = value
+    override suspend fun makeKey() = value
 }
 
 fun makeAPLString(s: String) = APLString(s)
@@ -562,36 +566,36 @@ class APLString(val content: IntArray) : APLArray() {
     constructor(string: String) : this(string.asCodepointList().toIntArray())
 
     override val dimensions = dimensionsOfSize(content.size)
-    override fun valueAt(p: Int) = APLChar(content[p])
+    override suspend fun valueAt(p: Int) = APLChar(content[p])
 
-    override fun collapseInt() = this
+    override suspend fun collapseInt() = this
 }
 
 private val NULL_DIMENSIONS = dimensionsOfSize(0)
 
 class APLNullValue : APLArray() {
     override val dimensions get() = NULL_DIMENSIONS
-    override fun valueAt(p: Int) = throw APLIndexOutOfBoundsException("Attempt to read a value from the null value")
+    override suspend fun valueAt(p: Int) = throw APLIndexOutOfBoundsException("Attempt to read a value from the null value")
 }
 
 abstract class DeferredResultArray : APLArray() {
-    override fun unwrapDeferredValue(): APLValue {
+    override suspend fun unwrapDeferredValue(): APLValue {
         return if (dimensions.isEmpty()) valueAt(0).unwrapDeferredValue() else this
     }
 }
 
 class APLSymbol(val value: Symbol) : APLSingleValue() {
     override val aplValueType: APLValueType get() = APLValueType.SYMBOL
-    override fun formatted(style: FormatStyle) =
+    override suspend fun formatted(style: FormatStyle) =
         when (style) {
             FormatStyle.PLAIN -> "${value.namespace.name}:${value.symbolName}"
             FormatStyle.PRETTY -> "${value.namespace.name}:${value.symbolName}"
             FormatStyle.READABLE -> "'${value.namespace.name}:${value.symbolName}"
         }
 
-    override fun compareEquals(reference: APLValue) = reference is APLSymbol && value == reference.value
+    override suspend fun compareEquals(reference: APLValue) = reference is APLSymbol && value == reference.value
 
-    override fun compare(reference: APLValue, pos: Position?): Int {
+    override suspend fun compare(reference: APLValue, pos: Position?): Int {
         if (reference is APLSymbol) {
             return value.compareTo(reference.value)
         } else {
@@ -599,9 +603,9 @@ class APLSymbol(val value: Symbol) : APLSingleValue() {
         }
     }
 
-    override fun ensureSymbol(pos: Position?) = this
+    override suspend fun ensureSymbol(pos: Position?) = this
 
-    override fun makeKey() = value
+    override suspend fun makeKey() = value
 }
 
 /**
@@ -612,24 +616,24 @@ class APLSymbol(val value: Symbol) : APLSingleValue() {
  */
 class LambdaValue(private val fn: APLFunction, private val previousContext: RuntimeContext) : APLSingleValue() {
     override val aplValueType: APLValueType get() = APLValueType.LAMBDA_FN
-    override fun formatted(style: FormatStyle) =
+    override suspend fun formatted(style: FormatStyle) =
         when (style) {
             FormatStyle.PLAIN -> "function"
             FormatStyle.READABLE -> throw IllegalArgumentException("Functions can't be printed in readable form")
             FormatStyle.PRETTY -> "function"
         }
 
-    override fun compareEquals(reference: APLValue) = this === reference
+    override suspend fun compareEquals(reference: APLValue) = this === reference
 
-    override fun makeKey() = fn
+    override suspend fun makeKey() = fn
 
     fun makeClosure(): APLFunction {
         return object : APLFunction(fn.pos) {
-            override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+            override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
                 return fn.eval1Arg(previousContext, a, axis)
             }
 
-            override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+            override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
                 return fn.eval2Arg(previousContext, a, b, axis)
             }
 

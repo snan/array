@@ -4,7 +4,7 @@ import kotlin.test.*
 
 class NamespaceTest : APLTest() {
     @Test
-    fun namespaceComparison() {
+    fun namespaceComparison() = runBlockingCompat<Unit> {
         val engine = Engine()
         val foo = engine.makeNamespace("foo")
         assertEquals("foo", foo.name)
@@ -16,7 +16,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun namespaceSymbols() {
+    fun namespaceSymbols() = runBlockingCompat<Unit> {
         val engine = Engine()
         val tokeniser = TokenGenerator(engine, StringSourceLocation("foo:bar bar aa:bar foo test bar:bar"))
         tokeniser.nextTokenWithType<Symbol>().let { token ->
@@ -50,14 +50,14 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun aplCompareSymbols() {
+    fun aplCompareSymbols() = runBlockingCompat<Unit> {
         assertSimpleNumber(0, parseAPLExpression("'foo:bar ≡ 'aa:bar"))
         assertSimpleNumber(1, parseAPLExpression("'foo:bar ≡ 'foo:bar"))
         assertSimpleNumber(0, parseAPLExpression("'foo:bar ≡ 'foo:aa"))
     }
 
     @Test
-    fun assignToNamespaceVariables() {
+    fun assignToNamespaceVariables() = runBlockingCompat<Unit> {
         parseAPLExpression("foo:bar ← 1 ◊ a:bar ← 2 ◊ foo:abc ← 3 ◊ foo:bar a:bar foo:abc").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(1, 2, 3), result)
@@ -65,7 +65,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun invalidSymbolNames() {
+    fun invalidSymbolNames() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             val tokeniser = makeTokeniser("foo:bar:test")
             tokeniser.nextToken()
@@ -81,14 +81,14 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun changeNamespace() {
+    fun changeNamespace() = runBlockingCompat<Unit> {
         parseAPLExpression("namespace(\"foo\") 'bar").let { result ->
             assertSym("bar", "foo", result)
         }
     }
 
     @Test
-    fun changeNamespace2() {
+    fun changeNamespace2() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |namespace("foo")
@@ -110,7 +110,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun defaultNamespaceFallback() {
+    fun defaultNamespaceFallback() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |namespace("foo")
@@ -131,7 +131,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun kapNamespaceIsAlwaysImported() {
+    fun kapNamespaceIsAlwaysImported() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |export(kap:foo)
@@ -143,7 +143,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun exportMultipleSymbols() {
+    fun exportMultipleSymbols() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |namespace("foo")
@@ -157,7 +157,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun exportNothing() {
+    fun exportNothing() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |namespace("foo")
@@ -171,7 +171,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun unexportedSymbolsShouldNotBeVisible() {
+    fun unexportedSymbolsShouldNotBeVisible() = runBlockingCompat<Unit> {
         assertFailsWith<VariableNotAssigned> {
             parseAPLExpression(
                 """
@@ -185,7 +185,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun unexportedNamesInCustomSyntaxShouldFail() {
+    fun unexportedNamesInCustomSyntaxShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression(
                 """
@@ -200,7 +200,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun includingLibraryShouldNotChangeNamespace() {
+    fun includingLibraryShouldNotChangeNamespace() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |namespace("bar")
@@ -212,7 +212,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun simpleInclude() {
+    fun simpleInclude() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |use("test-data/use-test.kap")
@@ -222,7 +222,7 @@ class NamespaceTest : APLTest() {
     }
 
     @Test
-    fun includeFailsWithIllegalFile() {
+    fun includeFailsWithIllegalFile() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("use(\"nonexistent.kap\")")
         }

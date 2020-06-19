@@ -10,7 +10,7 @@ interface MPAtomicRefArray<T> {
     fun compareAndExchange(index: Int, expected: T?, newValue: T?): T?
 
     @Suppress("IfThenToElvis")
-    fun checkOrUpdate(index: Int, fn: () -> T): T {
+    suspend fun checkOrUpdate(index: Int, fn: suspend () -> T): T {
         val old = get(index)
         if (old != null) {
             return old
@@ -23,14 +23,4 @@ interface MPAtomicRefArray<T> {
 
 expect fun <T> makeAtomicRefArray(size: Int): MPAtomicRefArray<T>
 
-interface ThreadWrapper {
-    fun join()
-}
-
-expect fun runInThread(name: String, fn: () -> Unit): ThreadWrapper
-
-interface MPLock {
-    fun <T> withLockHeld(fn: ()-> T): T
-}
-
-expect fun makeLock(): MPLock
+expect fun <T> runBlockingCompat(fn: suspend () -> T): T

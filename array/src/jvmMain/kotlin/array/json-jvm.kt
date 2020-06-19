@@ -7,13 +7,13 @@ import com.google.gson.stream.JsonToken
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
-actual fun parseJsonToAPL(input: ByteProvider): APLValue {
+actual suspend fun parseJsonToAPL(input: ByteProvider): APLValue {
     val gson = Gson()
     val jsonReader = gson.newJsonReader(InputStreamReader(ByteProviderInputStream(input), StandardCharsets.UTF_8))
     return parseEntry(jsonReader)
 }
 
-private fun parseEntry(jsonReader: JsonReader): APLValue {
+private suspend fun parseEntry(jsonReader: JsonReader): APLValue {
     return when (jsonReader.peek()) {
         JsonToken.BEGIN_ARRAY -> parseArray(jsonReader)
         JsonToken.BEGIN_OBJECT -> parseObject(jsonReader)
@@ -25,7 +25,7 @@ private fun parseEntry(jsonReader: JsonReader): APLValue {
     }
 }
 
-private fun parseObject(reader: JsonReader): APLMap {
+private suspend fun parseObject(reader: JsonReader): APLMap {
     val content = ArrayList<Pair<Any, APLValue>>()
     reader.beginObject()
     while (true) {
@@ -41,7 +41,7 @@ private fun parseObject(reader: JsonReader): APLMap {
     return APLMap(ImmutableMap.makeFromContent(content))
 }
 
-private fun parseArray(reader: JsonReader): APLArray {
+private suspend fun parseArray(reader: JsonReader): APLArray {
     val content = ArrayList<APLValue>()
     reader.beginArray()
     while (true) {
@@ -73,12 +73,14 @@ private fun parseNull(reader: JsonReader): APLNullValue {
 }
 
 fun main() {
-    val result = parseJsonToAPL(openFile("array/test-data/json-test.json"))
-    if (result is APLMap) {
-        result.content.forEach { (key, value) ->
-            println("key: ${key}\nValue:\n${value.formatted(FormatStyle.PRETTY)}\n\n")
+    runBlockingCompat {
+        val result = parseJsonToAPL(openFile("array/test-data/json-test.json"))
+        if (result is APLMap) {
+            result.content.forEach { (key, value) ->
+                println("key: ${key}\nValue:\n${value.formatted(FormatStyle.PRETTY)}\n\n")
+            }
+        } else {
+            println(result.formatted(FormatStyle.PRETTY))
         }
-    } else {
-        println(result.formatted(FormatStyle.PRETTY))
     }
 }

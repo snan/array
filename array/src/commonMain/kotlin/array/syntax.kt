@@ -78,7 +78,7 @@ class CallWithVarInstruction(
     val bindings: List<Pair<EnvironmentBinding, Instruction>>,
     pos: Position
 ) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         val newContext = context.link(env)
         bindings.forEach { (envBinding, instr) ->
             newContext.setVar(envBinding, instr.evalWithContext(context))

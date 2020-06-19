@@ -5,11 +5,11 @@ import array.complex.Complex
 import kotlin.math.*
 
 interface CellSumFunction1Arg {
-    fun combine(a: APLSingleValue): APLValue
+    suspend fun combine(a: APLSingleValue): APLValue
 }
 
 interface CellSumFunction2Args {
-    fun combineValues(a: APLSingleValue, b: APLSingleValue): APLValue
+    suspend fun combineValues(a: APLSingleValue, b: APLSingleValue): APLValue
 }
 
 class ArraySum1Arg(
@@ -18,7 +18,7 @@ class ArraySum1Arg(
 ) : DeferredResultArray() {
     override val dimensions get() = a.dimensions
     override val size get() = a.size
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         if (a is APLSingleValue) {
             return fn.combine(a)
         }
@@ -50,7 +50,7 @@ class ArraySum2Args(
 
     override val rank = dimensions.size
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val v1 = if (a is APLSingleValue) a else a.valueAt(p)
         val v2 = if (b is APLSingleValue) b else b.valueAt(p)
         return if (v1 is APLSingleValue && v2 is APLSingleValue) {
@@ -62,18 +62,18 @@ class ArraySum2Args(
 }
 
 abstract class MathCombineAPLFunction(pos: Position) : APLFunction(pos) {
-    override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         val fn = object : CellSumFunction1Arg {
-            override fun combine(a: APLSingleValue): APLValue {
+            override suspend fun combine(a: APLSingleValue): APLValue {
                 return combine1Arg(a)
             }
         }
         return ArraySum1Arg(fn, a)
     }
 
-    override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
         val fn = object : CellSumFunction2Args {
-            override fun combineValues(a: APLSingleValue, b: APLSingleValue): APLValue {
+            override suspend fun combineValues(a: APLSingleValue, b: APLSingleValue): APLValue {
                 return combine2Arg(a, b)
             }
         }
@@ -117,13 +117,14 @@ abstract class MathCombineAPLFunction(pos: Position) : APLFunction(pos) {
         }
     }
 
-    open fun combine1Arg(a: APLSingleValue): APLValue = TODO("not implemented")
-    open fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue = TODO("not implemented")
+    open suspend fun combine1Arg(a: APLSingleValue): APLValue = TODO("not implemented")
+    open suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue = TODO("not implemented")
 }
 
 abstract class MathNumericCombineAPLFunction(pos: Position) : MathCombineAPLFunction(pos) {
-    override fun combine1Arg(a: APLSingleValue): APLValue = numberCombine1Arg(a.ensureNumber(pos))
-    override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue = numberCombine2Arg(a.ensureNumber(pos), b.ensureNumber())
+    override suspend fun combine1Arg(a: APLSingleValue): APLValue = numberCombine1Arg(a.ensureNumber(pos))
+    override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue =
+        numberCombine2Arg(a.ensureNumber(pos), b.ensureNumber())
 
     open fun numberCombine1Arg(a: APLNumber): APLValue = TODO("not implemented")
     open fun numberCombine2Arg(a: APLNumber, b: APLNumber): APLValue = TODO("not implemented")
@@ -363,7 +364,7 @@ fun complexFloor(z: Complex): Complex {
 
 class MinAPLFunction : APLFunctionDescriptor {
     class MinAPLFunctionImpl(pos: Position) : MathNumericCombineAPLFunction(pos) {
-        override fun combine1Arg(a: APLSingleValue): APLValue {
+        override suspend fun combine1Arg(a: APLSingleValue): APLValue {
             return singleArgNumericRelationOperation(
                 pos,
                 a,
@@ -373,7 +374,7 @@ class MinAPLFunction : APLFunctionDescriptor {
             )
         }
 
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return numericRelationOperation(
                 pos,
                 a,
@@ -395,7 +396,7 @@ fun complexCeiling(value: Complex): Complex {
 
 class MaxAPLFunction : APLFunctionDescriptor {
     class MaxAPLFunctionImpl(pos: Position) : MathNumericCombineAPLFunction(pos) {
-        override fun combine1Arg(a: APLSingleValue): APLValue {
+        override suspend fun combine1Arg(a: APLSingleValue): APLValue {
             return singleArgNumericRelationOperation(
                 pos,
                 a,
@@ -405,7 +406,7 @@ class MaxAPLFunction : APLFunctionDescriptor {
             )
         }
 
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return numericRelationOperation(
                 pos,
                 a,

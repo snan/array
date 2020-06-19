@@ -5,14 +5,14 @@ import kotlin.test.assertFailsWith
 
 class OuterJoinTest : APLTest() {
     @Test
-    fun test1x1() {
+    fun test1x1() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1 2 ∘.× 1 2 3 4")
         assertDimension(dimensionsOfSize(2, 4), result)
         assertArrayContent(arrayOf(1, 2, 3, 4, 2, 4, 6, 8), result)
     }
 
     @Test
-    fun testArrayResult() {
+    fun testArrayResult() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1 2 ∘.{⍺,⍵} 9 8 7 6")
         assertDimension(dimensionsOfSize(2, 4), result)
         assertPairs(
@@ -29,20 +29,20 @@ class OuterJoinTest : APLTest() {
     }
 
     @Test
-    fun testInnerJoin() {
+    fun testInnerJoin() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("100 200 300+.×5 6 7")
         assertSimpleNumber(3800, result)
     }
 
     @Test
-    fun testInnerJoinInvalidDimensions() {
+    fun testInnerJoinInvalidDimensions() = runBlockingCompat<Unit> {
         assertFailsWith<InvalidDimensionsException> {
             parseAPLExpression("100 200 300+.×5 6 7 8").collapse()
         }
     }
 
     @Test
-    fun testInnerJoinLarge() {
+    fun testInnerJoinLarge() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(2 3 1 2 ⍴ ⍳24) +.× 2 4 1 3 7 ⍴ ⍳1000")
         assertDimension(dimensionsOfSize(2, 3, 1, 4, 1, 3, 7), result)
         assertArrayContent(
@@ -91,7 +91,7 @@ class OuterJoinTest : APLTest() {
     }
 
     @Test
-    fun firstAxisSingleDimension() {
+    fun firstAxisSingleDimension() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(10 ⍴ ⍳1000) +.× 10 3 3 ⍴ ⍳1000")
         assertDimension(dimensionsOfSize(3, 3), result)
         assertArrayContent(
@@ -101,34 +101,34 @@ class OuterJoinTest : APLTest() {
     }
 
     @Test
-    fun secondAxisSingleDimension() {
+    fun secondAxisSingleDimension() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(2 3 1 30 ⍴ ⍳24) +.× 30 ⍴ ⍳1000")
         assertDimension(dimensionsOfSize(2, 3, 1), result)
         assertArrayContent(arrayOf(4739, 4397, 4919, 6305, 4739, 4397), result)
     }
 
     @Test
-    fun onlySingleDimensionalArguments() {
+    fun onlySingleDimensionalArguments() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(1+⍳8) +.× (10+⍳8)")
         assertSimpleNumber(528, result)
     }
 
     @Test
-    fun singleNumberWithSimpleArrayLeftArg() {
+    fun singleNumberWithSimpleArrayLeftArg() = runBlockingCompat<Unit> {
         parseAPLExpression("10 +.× ⍳8").let { result ->
             assertSimpleNumber(280, result)
         }
     }
 
     @Test
-    fun singleNumberWithSimpleArrayRightArg() {
+    fun singleNumberWithSimpleArrayRightArg() = runBlockingCompat<Unit> {
         parseAPLExpression("(⍳8) +.× ⍳8").let { result ->
             assertSimpleNumber(140, result)
         }
     }
 
     @Test
-    fun singleNumberWithMultiDimensionalArrayLeftArg() {
+    fun singleNumberWithMultiDimensionalArrayLeftArg() = runBlockingCompat<Unit> {
         parseAPLExpression("10 +.× 3 4 5 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(4, 5), result)
             assertArrayContent(
@@ -142,7 +142,7 @@ class OuterJoinTest : APLTest() {
     }
 
     @Test
-    fun singleNumberWithMultiDimensionalArrayRightArg() {
+    fun singleNumberWithMultiDimensionalArrayRightArg() = runBlockingCompat<Unit> {
         parseAPLExpression("(3 4 5 ⍴ ⍳1000) +.× 100").let { result ->
             assertDimension(dimensionsOfSize(3, 4), result)
             assertArrayContent(

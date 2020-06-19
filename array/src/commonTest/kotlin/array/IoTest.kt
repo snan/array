@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 @ExperimentalStdlibApi
 class IoTest {
     @Test
-    fun testBinaryFile() {
+    fun testBinaryFile() = runBlockingCompat<Unit> {
         openFile("test-data/plain.txt").use { input ->
             val buf = ByteArray(3)
             val result = input.readBlock(buf)
@@ -17,7 +17,7 @@ class IoTest {
     }
 
     @Test
-    fun testPartialBlock() {
+    fun testPartialBlock() = runBlockingCompat<Unit> {
         openFile("test-data/plain.txt").use { input ->
             val buf = ByteArray(10) { 0 }
             val result = input.readBlock(buf, 2, 3)
@@ -27,7 +27,7 @@ class IoTest {
     }
 
     @Test
-    fun testMultipleReads() {
+    fun testMultipleReads() = runBlockingCompat<Unit> {
         openFile("test-data/plain.txt").use { input ->
             val buf = ByteArray(5) { 0 }
             val result1 = input.readBlock(buf, 2, 3)
@@ -40,7 +40,7 @@ class IoTest {
     }
 
     @Test
-    fun testCharacterContent() {
+    fun testCharacterContent() = runBlockingCompat<Unit> {
         openCharFile("test-data/char-tests.txt").use { input ->
             assertEquals(0x61, input.nextCodepoint())
             assertEquals(0x62, input.nextCodepoint())
@@ -54,7 +54,7 @@ class IoTest {
     }
 
     @Test
-    fun testReadline() {
+    fun testReadline() = runBlockingCompat<Unit> {
         openCharFile("test-data/plain.txt").use { input ->
             assertEquals("abcbar", input.nextLine())
             assertNull(input.nextCodepoint())

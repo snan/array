@@ -6,36 +6,36 @@ import kotlin.test.assertFailsWith
 
 class SortTest : APLTest() {
     @Test
-    fun numberSort() {
+    fun numberSort() = runBlockingCompat<Unit> {
         sortTest("10 30 20 5 11 21 3 1 12 2", arrayOf(7, 9, 6, 3, 0, 4, 8, 2, 5, 1))
     }
 
     @Test
-    fun sortStrings() {
+    fun sortStrings() = runBlockingCompat<Unit> {
         sortTest(
             "\"foo\" \"bar\" \"test\" \"abc\" \"xyz\" \"some\" \"strings\" \"withlongtext\" \"b\"",
             arrayOf(3, 8, 1, 0, 5, 6, 2, 7, 4))
     }
 
     @Test
-    fun sortMultiDimensional() {
+    fun sortMultiDimensional() = runBlockingCompat<Unit> {
         sortTest(
             "3 4 ⍴ 8 5 1 7 0 11 6 2 4 3 10 9",
             arrayOf(1, 2, 0))
     }
 
     @Test
-    fun sortMixedTypes() {
+    fun sortMixedTypes() = runBlockingCompat<Unit> {
         sortTest("1.2 2 0.1 ¯9 ¯9.9 4 7.1 8.3", arrayOf(4, 3, 2, 0, 1, 5, 6, 7))
     }
 
     @Test
-    fun sortSingleElement() {
+    fun sortSingleElement() = runBlockingCompat<Unit> {
         sortTest(",1", arrayOf(0))
     }
 
     @Test
-    fun sortingScalarsShouldFail() {
+    fun sortingScalarsShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋1").collapse()
         }
@@ -45,14 +45,14 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun sortingArraysOfDifferentDimensions() {
+    fun sortingArraysOfDifferentDimensions() = runBlockingCompat<Unit> {
         sortTest(
             "(⊂4 3 ⍴ 1 2 3 4 5 6) (⊂3 4 ⍴ 1 2 3 4 5 6) (⊂3 2 ⍴ 1 2 3 4) (⊂2 5 ⍴ 1 2) (⊂2 5 3 ⍴ 1 2) (⊂4 3 ⍴ 1 2 2 4 5 6)",
             arrayOf(3, 2, 1, 5, 0, 4))
     }
 
     @Test
-    fun compareNumbersAndCharsShouldFail() {
+    fun compareNumbersAndCharsShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋ @a 1 2 @b").collapse()
         }
@@ -62,7 +62,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun compareListsShouldFail() {
+    fun compareListsShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋ (1;2) (2;1)").collapse()
         }
@@ -72,7 +72,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun compareComplexShouldFail() {
+    fun compareComplexShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋ 1J2 2J3").collapse()
         }
@@ -82,7 +82,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun mixStringsAndSymbolsShouldFail() {
+    fun mixStringsAndSymbolsShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋ \"foo\" \"bar\" 'somename").collapse()
         }
@@ -92,7 +92,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun symbolsAndNumberShouldFail() {
+    fun symbolsAndNumberShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋ 1 2 3 'somename").collapse()
         }
@@ -102,7 +102,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun numbersAndComplexShouldFail() {
+    fun numbersAndComplexShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍋ 1 2 3 1J2").collapse()
         }
@@ -112,12 +112,12 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun sortSymbols() {
+    fun sortSymbols() = runBlockingCompat<Unit> {
         sortTest("'foo 'bar 'a 'test 'abclongerstring", arrayOf(2, 4, 1, 0, 3))
     }
 
     @Test
-    fun tokenSymbolComparison() {
+    fun tokenSymbolComparison() = runBlockingCompat<Unit> {
         val engine = Engine()
         val sym = APLSymbol(engine.internSymbol("foo"))
         val str = makeAPLString("bar")
@@ -130,7 +130,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun numberSymbolComparison() {
+    fun numberSymbolComparison() = runBlockingCompat<Unit> {
         val engine = Engine()
         val num = 1.makeAPLNumber()
         val sym = APLSymbol(engine.internSymbol("foo"))
@@ -143,7 +143,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun numberComplexComparison() {
+    fun numberComplexComparison() = runBlockingCompat<Unit> {
         val num = 1.makeAPLNumber()
         val complex = Complex(2.0, 3.0).makeAPLNumber()
         assertFailsWith<APLEvalException> {
@@ -155,7 +155,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun listComparison() {
+    fun listComparison() = runBlockingCompat<Unit> {
         val list1 = APLList(listOf(1.makeAPLNumber(), 2.makeAPLNumber()))
         val list2 = APLList(listOf(2.makeAPLNumber(), 4.makeAPLNumber()))
         assertFailsWith<APLEvalException> {
@@ -167,7 +167,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun numberCharComparison() {
+    fun numberCharComparison() = runBlockingCompat<Unit> {
         val char1 = APLChar('a'.toInt())
         val num1 = 1.makeAPLNumber()
         assertFailsWith<APLEvalException> {
@@ -179,7 +179,7 @@ class SortTest : APLTest() {
     }
 
     @Test
-    fun symbolCharComparison() {
+    fun symbolCharComparison() = runBlockingCompat<Unit> {
         val engine = Engine()
         val sym = APLSymbol(engine.internSymbol("foo"))
         val ch = APLChar('a'.toInt())
@@ -191,8 +191,8 @@ class SortTest : APLTest() {
         }
     }
 
-    private fun sortTest(content: String, expected: Array<Int>) {
-        fun sortTestInner(s: String, exp: Array<Int>) {
+    private suspend fun sortTest(content: String, expected: Array<Int>) {
+        suspend fun sortTestInner(s: String, exp: Array<Int>) {
             parseAPLExpression(s).let { result ->
                 assertDimension(dimensionsOfSize(exp.size), result)
                 assertArrayContent(exp, result)

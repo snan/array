@@ -3,4 +3,4 @@ package array.json
 import array.APLValue
 import array.ByteProvider
 
-expect fun parseJsonToAPL(input: ByteProvider): APLValue
+expect suspend fun parseJsonToAPL(input: ByteProvider): APLValue

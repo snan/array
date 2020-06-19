@@ -5,12 +5,12 @@ import array.csv.readCsv
 
 class PrintAPLFunction : APLFunctionDescriptor {
     class PrintAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             printValue(context, a, FormatStyle.PLAIN)
             return a
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             val plainSym = context.engine.internSymbol("plain")
             val prettySym = context.engine.internSymbol("pretty")
             val readSym = context.engine.internSymbol("read")
@@ -25,7 +25,7 @@ class PrintAPLFunction : APLFunctionDescriptor {
             return b
         }
 
-        private fun printValue(context: RuntimeContext, a: APLValue, style: FormatStyle) {
+        private suspend fun printValue(context: RuntimeContext, a: APLValue, style: FormatStyle) {
             context.engine.standardOutput.writeString(a.formatted(style))
         }
     }
@@ -35,7 +35,7 @@ class PrintAPLFunction : APLFunctionDescriptor {
 
 class ReadCSVFunction : APLFunctionDescriptor {
     class ReadCSVFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val source = openCharFile(arrayAsStringValue(a, pos))
             try {
                 return readCsv(source)
@@ -50,7 +50,7 @@ class ReadCSVFunction : APLFunctionDescriptor {
 
 class LoadFunction : APLFunctionDescriptor {
     class LoadFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val requestedFile = arrayAsStringValue(a, pos)
             val file = context.engine.resolveLibraryFile(requestedFile) ?: requestedFile
             val engine = context.engine
@@ -65,7 +65,7 @@ class LoadFunction : APLFunctionDescriptor {
 
 class HttpRequestFunction : APLFunctionDescriptor {
     class HttpRequestFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val url = arrayAsStringValue(a, pos)
             val result = httpRequest(url)
             return makeAPLString(result.content)

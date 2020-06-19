@@ -7,7 +7,7 @@ import kotlin.test.assertFailsWith
 
 class FlowControlTest : APLTest() {
     @Test
-    fun assertIf() {
+    fun assertIf() = runBlockingCompat<Unit> {
         assertSimpleNumber(10, parseAPLExpression("if (1) { 10 }", true))
         parseAPLExpression("if (0) { 10 }", true).let { result ->
             assertDimension(dimensionsOfSize(0), result)
@@ -15,31 +15,31 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun testIfElse() {
+    fun testIfElse() = runBlockingCompat<Unit> {
         assertSimpleNumber(10, parseAPLExpression("if (1) { 10 } else { 20 }", true))
         assertSimpleNumber(20, parseAPLExpression("if (0) { 10 } else { 20 }", true))
     }
 
     @Test
-    fun testIfElseInExpressionLeftSide() {
+    fun testIfElseInExpressionLeftSide() = runBlockingCompat<Unit> {
         assertSimpleNumber(1010, parseAPLExpression("1000 + if (1) { 10 } else { 20 }", true))
         assertSimpleNumber(1020, parseAPLExpression("1000 + if (0) { 10 } else { 20 }", true))
     }
 
     @Test
-    fun testIfElseInExpressionRightSide() {
+    fun testIfElseInExpressionRightSide() = runBlockingCompat<Unit> {
         assertSimpleNumber(1004, parseAPLExpression("if (1) { 4 } else { 5 } + 1000", true))
         assertSimpleNumber(1005, parseAPLExpression("if (0) { 4 } else { 5 } + 1000", true))
     }
 
     @Test
-    fun testIfElseInExpressionBothSides() {
+    fun testIfElseInExpressionBothSides() = runBlockingCompat<Unit> {
         assertSimpleNumber(11004, parseAPLExpression("10000 + if (1) { 4 } else { 5 } + 1000", true))
         assertSimpleNumber(11005, parseAPLExpression("10000 + if (0) { 4 } else { 5 } + 1000", true))
     }
 
     @Test
-    fun testSideEffectsInIf() {
+    fun testSideEffectsInIf() = runBlockingCompat<Unit> {
         parseAPLExpressionWithOutput("print 10 ◊ if (1) { print 2 } ◊ print 3 ◊ 100", true).let { (result, s) ->
             assertSimpleNumber(100, result)
             assertEquals("1023", s)
@@ -51,7 +51,7 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun testSideEffectsInIfElse() {
+    fun testSideEffectsInIfElse() = runBlockingCompat<Unit> {
         parseAPLExpressionWithOutput("print 10 ◊ if (1) { print 2 } else { print 4 } ◊ print 3 ◊ 100", true).let { (result, s) ->
             assertSimpleNumber(100, result)
             assertEquals("1023", s)
@@ -63,7 +63,7 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun testMultilineIf() {
+    fun testMultilineIf() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |if (1) {
@@ -74,7 +74,7 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun testMultilineIfWithElse() {
+    fun testMultilineIfWithElse() = runBlockingCompat<Unit> {
         val result0 = parseAPLExpression(
             """
             |if (1) {
@@ -98,7 +98,7 @@ class FlowControlTest : APLTest() {
 
     @Ignore
     @Test
-    fun recursionTest() {
+    fun recursionTest() = runBlockingCompat<Unit> {
         val (result, out) = parseAPLExpressionWithOutput(
             """
             |∇ foo (x) { if (x>0) { print x ◊ foo x-1 } else { 123 } }
@@ -109,7 +109,7 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun lambdaRecursionTest() {
+    fun lambdaRecursionTest() = runBlockingCompat<Unit> {
         val (result, out) = parseAPLExpressionWithOutput(
             """
             |foo ← λ{ x←⍵ ◊ if(x>0) { print x ◊ ⍞foo x-1 } else { 123 } }
@@ -120,7 +120,7 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun scopeTest0() {
+    fun scopeTest0() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |∇ foo (x) { λ{⍵+x} }
@@ -131,7 +131,7 @@ class FlowControlTest : APLTest() {
     }
 
     @Test
-    fun scopeTest1() {
+    fun scopeTest1() = runBlockingCompat<Unit> {
         assertFailsWith<VariableNotAssigned> {
             parseAPLExpression(
                 """
@@ -145,7 +145,7 @@ class FlowControlTest : APLTest() {
 
     @Ignore
     @Test
-    fun nonLocalExitTest() {
+    fun nonLocalExitTest() = runBlockingCompat<Unit> {
         parseAPLExpression("catch ('a) { { ⍵+10 ◊ 3→'a ◊ 10 } 1 } {⍵+1}").let { result ->
             assertSimpleNumber(4, result)
         }

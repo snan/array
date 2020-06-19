@@ -9,6 +9,7 @@ import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.util.Callback
+import kotlinx.coroutines.runBlocking
 
 class TableResult(content: APLValue) : TableView<APLRowWrapper>() {
     init {
@@ -47,11 +48,13 @@ class SimpleAPLCell : TableCell<APLRowWrapper, APLValueWrapper>() {
     override fun updateItem(item: APLValueWrapper?, empty: Boolean) {
         super.updateItem(item, empty)
 
-        if (empty || item == null) {
-            text = null
-            graphic = null
-        } else {
-            text = item.value.formatted(FormatStyle.PRETTY)
+        runBlocking {
+            if (empty || item == null) {
+                text = null
+                graphic = null
+            } else {
+                text = item.value.formatted(FormatStyle.PRETTY)
+            }
         }
     }
 }
@@ -76,13 +79,15 @@ class APLRowWrapper(val parent: APLValue, val row: Int, val cols: Int) {
     }
 
     fun getValue(col: Int): APLValue {
-        val v = values[col]
-        return if (v == null) {
-            val updated = parent.valueAt(row * cols + col).collapse()
-            values[col] = updated
-            updated
-        } else {
-            v
+        return runBlocking {
+            val v = values[col]
+            if (v == null) {
+                val updated = parent.valueAt(row * cols + col).collapse()
+                values[col] = updated
+                updated
+            } else {
+                v
+            }
         }
     }
 }

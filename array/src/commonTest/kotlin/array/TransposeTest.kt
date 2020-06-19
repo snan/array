@@ -7,21 +7,21 @@ import kotlin.test.assertTrue
 
 class TransposeTest : APLTest() {
     @Test
-    fun test2DTransposeEmptyLeftArg() {
+    fun test2DTransposeEmptyLeftArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⍉ 2 3 ⍴ ⍳6")
         assertDimension(dimensionsOfSize(3, 2), result)
         assertArrayContent(arrayOf(0, 3, 1, 4, 2, 5), result)
     }
 
     @Test
-    fun test2DTranspose() {
+    fun test2DTranspose() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1 0 ⍉ 2 3 ⍴ ⍳6")
         assertDimension(dimensionsOfSize(3, 2), result)
         assertArrayContent(arrayOf(0, 3, 1, 4, 2, 5), result)
     }                //0, 4, 8, 12, 16, 20, 1, 5, 9, 13, 17, 21, 2, 6, 10, 14, 18, 22, 3, 7, 11, 15, 19, 23
 
     @Test
-    fun test3DTransposeEmptyLeftArg() {
+    fun test3DTransposeEmptyLeftArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⍉ 3 4 5 ⍴ ⍳60")
         assertDimension(dimensionsOfSize(5, 4, 3), result)
         assertArrayContent(
@@ -36,7 +36,7 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun test4DTranspose() {
+    fun test4DTranspose() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("2 3 0 1 ⍉ 2 3 4 5 ⍴ ⍳120")
         assertDimension(dimensionsOfSize(4, 5, 2, 3), result)
         assertArrayContent(
@@ -55,13 +55,13 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun renderTransposedArray() {
+    fun renderTransposedArray() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("2 3 1 0 ⍉ 2 3 4 5 ⍴ ⍳120")
         assertTrue(result.formatted(FormatStyle.PRETTY).length > 100)
     }
 
     @Test
-    fun test5DTranspose() {
+    fun test5DTranspose() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("1 4 2 0 3 ⍉ 2 3 4 5 6 ⍴ ⍳720")
         assertDimension(dimensionsOfSize(5, 2, 4, 6, 3), result)
         assertArrayContent(
@@ -123,21 +123,21 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun transposeSingleTestEmptyLeftArg() {
+    fun transposeSingleTestEmptyLeftArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⍉3")
         assertDimension(emptyDimensions(), result)
         assertEquals(3, result.ensureNumber().asLong())
     }
 
     @Test
-    fun transposeSingleTest() {
+    fun transposeSingleTest() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(0⍴7) ⍉3")
         assertDimension(emptyDimensions(), result)
         assertEquals(3, result.ensureNumber().asLong())
     }
 
     @Test
-    fun errorWithIncorrectAxisCount() {
+    fun errorWithIncorrectAxisCount() = runBlockingCompat<Unit> {
         assertFailsWith<InvalidDimensionsException> {
             parseAPLExpression("0 1 ⍉ 3 4 5 ⍴ ⍳60")
         }
@@ -153,7 +153,7 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun inverseHorizontalTest() {
+    fun inverseHorizontalTest() = runBlockingCompat<Unit> {
         parseAPLExpression("⌽4 5 4 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(4, 5, 4), result)
             assertArrayContent(
@@ -173,7 +173,7 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun inverseVerticalTest() {
+    fun inverseVerticalTest() = runBlockingCompat<Unit> {
         parseAPLExpression("⊖4 5 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(4, 5), result)
             assertArrayContent(arrayOf(15, 16, 17, 18, 19, 10, 11, 12, 13, 14, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4), result)
@@ -188,7 +188,7 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun rotateHorizontalTest() {
+    fun rotateHorizontalTest() = runBlockingCompat<Unit> {
         parseAPLExpression("1⌽1 2 3 4").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(2, 3, 4, 1), result)
@@ -196,7 +196,7 @@ class TransposeTest : APLTest() {
     }
 
     @Test
-    fun rotateVerticalTest() {
+    fun rotateVerticalTest() = runBlockingCompat<Unit> {
         parseAPLExpression("1⊖4 5 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(4, 5), result)
             assertArrayContent(arrayOf(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 0, 1, 2, 3, 4), result)

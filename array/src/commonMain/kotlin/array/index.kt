@@ -29,7 +29,7 @@ private class IndexedArrayValue(val content: APLValue, val indexValue: Array<Eit
         constantOffset = offset
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val positionArray = dimensions.positionFromIndex(p)
         var result = constantOffset
         for (i in positionArray.indices) {
@@ -44,7 +44,7 @@ private class IndexedArrayValue(val content: APLValue, val indexValue: Array<Eit
         return content.valueAt(result)
     }
 
-    override fun unwrapDeferredValue(): APLValue {
+    override suspend fun unwrapDeferredValue(): APLValue {
         // This is copied from reduce. The same concerns as described in that comment are applicable in this function.
         if (dimensions.isEmpty()) {
             val v = valueAt(0).unwrapDeferredValue()
@@ -57,7 +57,7 @@ private class IndexedArrayValue(val content: APLValue, val indexValue: Array<Eit
 }
 
 class ArrayIndex(val content: Instruction, val indexInstr: Instruction, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         val indexValue = indexInstr.evalWithContext(context)
         val contentValue = content.evalWithContext(context)
 
@@ -88,7 +88,7 @@ class ArrayIndex(val content: Instruction, val indexInstr: Instruction, pos: Pos
         return IndexedArrayValue(contentValue, axis)
     }
 
-    private fun convertToList(value: APLValue): APLList {
+    private suspend fun convertToList(value: APLValue): APLList {
         val v = value.unwrapDeferredValue()
         return if (v is APLList) {
             v

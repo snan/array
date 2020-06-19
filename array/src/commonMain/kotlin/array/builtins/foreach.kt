@@ -12,7 +12,7 @@ class ForEachResult1Arg(
     override val dimensions
         get() = value.dimensions
     override val rank get() = value.rank
-    override fun valueAt(p: Int) = fn.eval1Arg(context, value.valueAt(p), axis)
+    override suspend fun valueAt(p: Int) = fn.eval1Arg(context, value.valueAt(p), axis)
     override val size get() = value.size
 }
 
@@ -33,7 +33,7 @@ class ForEachResult2Arg(
     override val dimensions: Dimensions
         get() = arg1.dimensions
     override val rank get() = arg1.rank
-    override fun valueAt(p: Int) = fn.eval2Arg(context, arg1.valueAt(p), arg2.valueAt(p), axis)
+    override suspend fun valueAt(p: Int) = fn.eval2Arg(context, arg1.valueAt(p), arg2.valueAt(p), axis)
     override val size get() = arg1.size
 }
 
@@ -50,11 +50,11 @@ class ForEachOp : APLOperatorOneArg {
             return object : APLFunction(pos) {
                 private val fn = fnDescriptor.make(pos)
 
-                override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+                override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
                     return ForEachResult1Arg(context, fn, a, axis, pos)
                 }
 
-                override fun eval2Arg(
+                override suspend fun eval2Arg(
                     context: RuntimeContext,
                     a: APLValue,
                     b: APLValue,

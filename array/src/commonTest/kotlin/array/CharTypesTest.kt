@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class CharTypesTest {
     @Test
-    fun breakIteratorTest() {
+    fun breakIteratorTest() = runBlockingCompat<Unit> {
         val list = "abc test".asGraphemeList()
         assertEquals(8, list.size)
         assertEquals("a", list[0])
@@ -19,7 +19,7 @@ class CharTypesTest {
     }
 
     @Test
-    fun astralPlaneBreakIterator() {
+    fun astralPlaneBreakIterator() = runBlockingCompat<Unit> {
         val list = "ab\uD835\uDC9Fc".asGraphemeList()
         assertEquals(4, list.size)
         assertEquals("a", list[0])

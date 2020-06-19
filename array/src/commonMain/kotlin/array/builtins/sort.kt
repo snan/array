@@ -2,7 +2,7 @@ package array.builtins
 
 import array.*
 
-fun compareAPLArrays(a: APLValue, b: APLValue, pos: Position? = null): Int {
+suspend fun compareAPLArrays(a: APLValue, b: APLValue, pos: Position? = null): Int {
     val aDimensions = a.dimensions
     val bDimensions = b.dimensions
 
@@ -60,7 +60,7 @@ fun compareAPLArrays(a: APLValue, b: APLValue, pos: Position? = null): Int {
 }
 
 abstract class GradeFunction(pos: Position) : NoAxisAPLFunction(pos) {
-    override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
         val aDimensions = a.dimensions
 
         // Scalars can't be sorted
@@ -77,8 +77,11 @@ abstract class GradeFunction(pos: Position) : NoAxisAPLFunction(pos) {
         val firstAxisMultiplier = multipliers[0]
 
         val source = a.collapse()
-        val list = IntArray(aDimensions[0]) { it }
-        val sorted = list.sortedWith(Comparator { aIndex, bIndex ->
+        val list = ArrayList<Int>(aDimensions[0])
+        repeat(aDimensions[0]) { i ->
+            list.add(i)
+        }
+        suspendSort(list, { aIndex, bIndex ->
             var ap = aIndex * firstAxisMultiplier
             var bp = bIndex * firstAxisMultiplier
             var res = 0
@@ -95,7 +98,7 @@ abstract class GradeFunction(pos: Position) : NoAxisAPLFunction(pos) {
             }
             applyReverse(res)
         })
-        return APLArrayImpl(dimensionsOfSize(sorted.size), sorted.map { it.makeAPLNumber() }.toTypedArray())
+        return APLArrayImpl(dimensionsOfSize(list.size), list.map { it.makeAPLNumber() }.toTypedArray())
     }
 
     abstract fun applyReverse(result: Int): Int
@@ -115,4 +118,44 @@ class GradeDownFunction : APLFunctionDescriptor {
     }
 
     override fun make(pos: Position) = GradeUpFunctionImpl(pos)
+}
+
+suspend fun <T> suspendSort(list: MutableList<T>, comparator: suspend (a: T, b: T) -> Int) {
+    quickSort(list, 0, list.size - 1, comparator)
+}
+
+private suspend fun <T> quickSort(array: MutableList<T>, left: Int, right: Int, comparator: suspend (a: T, b: T) -> Int) {
+    val index = partition(array, left, right, comparator)
+    if (left < index - 1) { // 2) Sorting left half
+        quickSort(array, left, index - 1, comparator)
+    }
+    if (index < right) { // 3) Sorting right half
+        quickSort(array, index, right, comparator)
+    }
+}
+
+private suspend fun <T> partition(array: MutableList<T>, l: Int, r: Int, comparator: suspend (a: T, b: T) -> Int): Int {
+    var left = l
+    var right = r
+    val pivot = array[(left + right) / 2]
+    while (left <= right) {
+        while (comparator(array[left], pivot) < 0) {
+            left++
+        }
+        while (comparator(array[right], pivot) > 0) {
+            right--
+        }
+        if (left <= right) {
+            swapArray(array, left, right)
+            left++
+            right--
+        }
+    }
+    return left
+}
+
+private fun <T> swapArray(a: MutableList<T>, b: Int, c: Int) {
+    val temp = a[b]
+    a[b] = a[c]
+    a[c] = temp
 }

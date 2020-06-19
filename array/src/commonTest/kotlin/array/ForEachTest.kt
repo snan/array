@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class ForEachTest : APLTest() {
     @Test
-    fun simpleForEach() {
+    fun simpleForEach() = runBlockingCompat<Unit> {
         parseAPLExpression("÷¨1 4 2 16").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertEquals(1.0, result.valueAt(0).ensureNumber().asDouble())
@@ -16,7 +16,7 @@ class ForEachTest : APLTest() {
     }
 
     @Test
-    fun twoArgForEach() {
+    fun twoArgForEach() = runBlockingCompat<Unit> {
         parseAPLExpression("1 2 3 4+¨1").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(2, 3, 4, 5), result)
@@ -24,7 +24,7 @@ class ForEachTest : APLTest() {
     }
 
     @Test
-    fun scalarForEach() {
+    fun scalarForEach() = runBlockingCompat<Unit> {
         parseAPLExpression("1+¨11").let { result ->
             assertSimpleNumber(12, result)
         }

@@ -22,7 +22,7 @@ class OuterJoinResult(
         divisor = b.size
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val aPosition = p / divisor
         val bPosition = p % divisor
         return fn.eval2Arg(context, a.valueAt(aPosition), b.valueAt(bPosition), null)
@@ -63,7 +63,7 @@ class InnerJoinResult(
         highFactor = (if (leftSize == 0) dimensions.contentSize() else m[leftSize - 1])
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val posInA = (p / highFactor) * axisSize
         val posInB = p % highFactor
 
@@ -108,7 +108,7 @@ class OuterInnerJoinOp : APLOperatorTwoArg {
             val fn = fnDescriptor.make(pos)
 
             return object : APLFunction(pos) {
-                override fun eval2Arg(
+                override suspend fun eval2Arg(
                     context: RuntimeContext,
                     a: APLValue,
                     b: APLValue,
@@ -129,7 +129,7 @@ class OuterInnerJoinOp : APLOperatorTwoArg {
             val fn1 = fn1Descriptor.make(pos)
             val fn2 = fn2Descriptor.make(pos)
             return object : APLFunction(fn1.pos) {
-                override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+                override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
                     if (axis != null) {
                         throw APLIllegalArgumentException("inner join does not support axis arguments", pos)
                     }
@@ -167,11 +167,11 @@ class OuterInnerJoinOp : APLOperatorTwoArg {
 
 class NullFunction : APLFunctionDescriptor {
     class NullFunctionImpl(pos: Position) : APLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
             throw APLEvalException("null function cannot be called", pos)
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
             throw APLEvalException("null function cannot be called", pos)
         }
     }

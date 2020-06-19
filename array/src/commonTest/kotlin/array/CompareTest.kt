@@ -4,7 +4,7 @@ import kotlin.test.Test
 
 class CompareTest : APLTest() {
     @Test
-    fun testComparators() {
+    fun testComparators() = runBlockingCompat<Unit> {
         testFunction(arrayOf(1, 0, 0, 1, 0, 0), "<")
         testFunction(arrayOf(0, 1, 0, 0, 1, 0), ">")
         testFunction(arrayOf(1, 0, 1, 1, 0, 1), "≤")
@@ -13,7 +13,7 @@ class CompareTest : APLTest() {
     }
 
     @Test
-    fun testIdenticalSimple() {
+    fun testIdenticalSimple() = runBlockingCompat<Unit> {
         assertSimpleNumber(1, parseAPLExpression("10≡10"))
         assertSimpleNumber(0, parseAPLExpression("10≡100"))
         assertSimpleNumber(1, parseAPLExpression("10 11≡10 11"))
@@ -27,7 +27,7 @@ class CompareTest : APLTest() {
     }
 
     @Test
-    fun testNotIdentical() {
+    fun testNotIdentical() = runBlockingCompat<Unit> {
         assertSimpleNumber(0, parseAPLExpression("10≢10"))
         assertSimpleNumber(1, parseAPLExpression("10≢100"))
         assertSimpleNumber(0, parseAPLExpression("10 11≢4+6 7"))
@@ -41,7 +41,7 @@ class CompareTest : APLTest() {
         assertSimpleNumber(0, parseAPLExpression("(1;2;3) ≢ (1;2;3)"))
     }
 
-    private fun testFunction(expected: Array<Long>, name: String) {
+    private suspend fun testFunction(expected: Array<Long>, name: String) {
         assertSimpleNumber(expected[0], parseAPLExpression("1${name}2"))
         assertSimpleNumber(expected[1], parseAPLExpression("2${name}1"))
         assertSimpleNumber(expected[2], parseAPLExpression("2${name}2"))

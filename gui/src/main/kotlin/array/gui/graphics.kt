@@ -18,11 +18,11 @@ class GraphicWindowAPLValue(width: Int, height: Int) : APLSingleValue() {
     override val aplValueType: APLValueType
         get() = APLValueType.INTERNAL
 
-    override fun formatted(style: FormatStyle) = "graphic-window"
+    override suspend fun formatted(style: FormatStyle) = "graphic-window"
 
-    override fun compareEquals(reference: APLValue) = reference is GraphicWindowAPLValue && window === reference.window
+    override suspend fun compareEquals(reference: APLValue) = reference is GraphicWindowAPLValue && window === reference.window
 
-    override fun makeKey() = window
+    override suspend fun makeKey() = window
 
     fun updateContent(w: Int, h: Int, content: IntArray) {
         Platform.runLater {
@@ -33,7 +33,7 @@ class GraphicWindowAPLValue(width: Int, height: Int) : APLSingleValue() {
 
 class MakeGraphicFunction : APLFunctionDescriptor {
     class MakeGraphicFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val aDimensions = a.dimensions
             if (aDimensions.size != 1 || aDimensions[0] != 2) {
                 throw InvalidDimensionsException("Argument must be a two-element vector")
@@ -49,7 +49,7 @@ class MakeGraphicFunction : APLFunctionDescriptor {
 
 class DrawGraphicFunction : APLFunctionDescriptor {
     class DrawGraphicFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             if (v !is GraphicWindowAPLValue) {
                 throw APLIncompatibleDomainsException("Left argument must be a graphic object", pos)

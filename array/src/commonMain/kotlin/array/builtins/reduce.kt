@@ -31,7 +31,7 @@ class ReduceResult1Arg(
         toDestMul = fromSourceMul * argDimensions[axis]
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         return if (sizeAlongAxis == 0) {
             fn.identityValue()
         } else {
@@ -47,7 +47,7 @@ class ReduceResult1Arg(
         }
     }
 
-    override fun unwrapDeferredValue(): APLValue {
+    override suspend fun unwrapDeferredValue(): APLValue {
         // Hack warning: The current implementation of reduce is inconsistent.
         // Consider the following expression: +/1 2 3 4
         // It may be obvious that the result should simply be the scalar number 10.
@@ -81,7 +81,7 @@ class ReduceResult1Arg(
 abstract class ReduceFunctionImpl(fnDescriptor: APLFunctionDescriptor, val operatorAxis: Instruction?, pos: Position) : APLFunction(pos) {
     val fn = fnDescriptor.make(pos)
 
-    override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         val axisParam = if (operatorAxis != null) operatorAxis.evalWithContext(context).ensureNumber(pos).asInt() else null
         return if (a.rank == 0) {
             if (axisParam != null && axisParam != 0) {
@@ -140,7 +140,7 @@ class ScanResult1Arg(val context: RuntimeContext, val fn: APLFunction, val a: AP
     private val cachedResults = makeAtomicRefArray<APLValue>(dimensions.contentSize())
     private val axisActionFactors = AxisActionFactors(dimensions, axis)
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         axisActionFactors.withFactors(p) { high, low, axisCoord ->
             var currIndex = axisCoord
             var leftValue: APLValue
@@ -174,7 +174,7 @@ class ScanResult1Arg(val context: RuntimeContext, val fn: APLFunction, val a: AP
 abstract class ScanFunctionImpl(fnDescriptor: APLFunctionDescriptor, val operatorAxis: Instruction?, pos: Position) : APLFunction(pos) {
     val fn = fnDescriptor.make(pos)
 
-    override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         val axisParam = if (operatorAxis != null) operatorAxis.evalWithContext(context).ensureNumber(pos).asInt() else null
         return if (a.rank == 0) {
             if (axisParam != null && axisParam != 0) {

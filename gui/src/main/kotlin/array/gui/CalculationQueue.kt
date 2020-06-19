@@ -4,6 +4,7 @@ import array.APLValue
 import array.Either
 import array.Engine
 import array.SourceLocation
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.LinkedTransferQueue
 import java.util.concurrent.TransferQueue
 
@@ -17,7 +18,7 @@ class CalculationQueue(val engine: Engine) {
                 val request = queue.take()
                 var queueResult: Either<APLValue, Exception>
                 try {
-                    val result = engine.parseAndEval(request.source, request.linkNewContext).collapse()
+                    val result = runBlocking { engine.parseAndEval(request.source, request.linkNewContext).collapse() }
                     queueResult = Either.Left(result)
                 } catch (e: Exception) {
                     queueResult = Either.Right(e)

@@ -26,7 +26,7 @@ class AxisActionFactors(val dimensions: Dimensions, axis: Int) {
 class IotaArray(private val numElements: Int, private val start: Int = 0) : APLArray() {
     override val dimensions get() = dimensionsOfSize(numElements)
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         if (p < 0 || p >= size) {
             throw APLIndexOutOfBoundsException("Position in array: ${p}, size: ${size}")
         }
@@ -37,12 +37,12 @@ class IotaArray(private val numElements: Int, private val start: Int = 0) : APLA
 class FindIndexArray(val a: APLValue, val b: APLValue, val context: RuntimeContext) : APLArray() {
     override val dimensions = b.dimensions
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val reference = b.valueAt(p).unwrapDeferredValue()
         return findFromRef(reference)
     }
 
-    private fun findFromRef(reference: APLValue): APLLong {
+    private suspend fun findFromRef(reference: APLValue): APLLong {
         val elementCount = a.size
         for (i in 0 until elementCount) {
             val v = a.valueAt(i)
@@ -53,7 +53,7 @@ class FindIndexArray(val a: APLValue, val b: APLValue, val context: RuntimeConte
         return elementCount.makeAPLNumber()
     }
 
-    override fun unwrapDeferredValue(): APLValue {
+    override suspend fun unwrapDeferredValue(): APLValue {
         return if (dimensions.isEmpty()) {
             findFromRef(b)
         } else {
@@ -64,11 +64,11 @@ class FindIndexArray(val a: APLValue, val b: APLValue, val context: RuntimeConte
 
 class IotaAPLFunction : APLFunctionDescriptor {
     class IotaAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             return IotaArray(a.unwrapDeferredValue().ensureNumber(pos).asInt())
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             if (a.rank > 1) {
                 throw InvalidDimensionsException("Left argument must be rank 0 or 1", pos)
             }
@@ -80,17 +80,17 @@ class IotaAPLFunction : APLFunctionDescriptor {
 }
 
 class ResizedArray(override val dimensions: Dimensions, private val value: APLValue) : APLArray() {
-    override fun valueAt(p: Int) = if (value.isScalar()) value else value.valueAt(p % value.size)
+    override suspend fun valueAt(p: Int) = if (value.isScalar()) value else value.valueAt(p % value.size)
 }
 
 class RhoAPLFunction : APLFunctionDescriptor {
     class RhoAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val argDimensions = a.dimensions
             return APLArrayImpl.make(dimensionsOfSize(argDimensions.size)) { argDimensions[it].makeAPLNumber() }
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             if (a.dimensions.size > 1) {
                 throw InvalidDimensionsException("Left side of rho must be scalar or a one-dimensional array", pos)
             }
@@ -116,8 +116,8 @@ class RhoAPLFunction : APLFunctionDescriptor {
 
 class IdentityAPLFunction : APLFunctionDescriptor {
     class IdentityAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue) = a
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue) = b
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue) = a
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue) = b
     }
 
     override fun make(pos: Position) = IdentityAPLFunctionImpl(pos)
@@ -125,8 +125,8 @@ class IdentityAPLFunction : APLFunctionDescriptor {
 
 class HideAPLFunction : APLFunctionDescriptor {
     class HideAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue) = a
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue) = a
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue) = a
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue) = a
     }
 
     override fun make(pos: Position) = HideAPLFunctionImpl(pos)
@@ -134,7 +134,7 @@ class HideAPLFunction : APLFunctionDescriptor {
 
 class EncloseAPLFunction : APLFunctionDescriptor {
     class EncloseAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             return if (v is APLSingleValue) v else EnclosedAPLValue(v)
         }
@@ -145,7 +145,7 @@ class EncloseAPLFunction : APLFunctionDescriptor {
 
 class DiscloseAPLFunction : APLFunctionDescriptor {
     class DiscloseAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             return when {
                 v is APLSingleValue -> a
@@ -154,7 +154,7 @@ class DiscloseAPLFunction : APLFunctionDescriptor {
             }
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             if (a.dimensions.size !in 0..1) {
                 throw InvalidDimensionsException("Left argument to pick should be rank 0 or 1", pos)
             }
@@ -195,7 +195,7 @@ class Concatenated1DArrays(private val a: APLValue, private val b: APLValue) : A
 
     override val labels by lazy { resolveLabels() }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         return if (p >= aSize) b.valueAt(p - aSize) else a.valueAt(p)
     }
 
@@ -238,7 +238,7 @@ class Concatenated1DArrays(private val a: APLValue, private val b: APLValue) : A
 }
 
 abstract class ConcatenateAPLFunctionImpl(pos: Position) : APLFunction(pos) {
-    override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         return if (a.isScalar()) {
             APLArrayImpl.make(dimensionsOfSize(1)) { a }
         } else {
@@ -246,7 +246,7 @@ abstract class ConcatenateAPLFunctionImpl(pos: Position) : APLFunction(pos) {
         }
     }
 
-    override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
         // The APL concept of using a non-integer axis to specify that you want to add a dimension (i.e. the laminate
         // function) is a bit confusing and this operation should really have a different syntax.
         //
@@ -310,7 +310,7 @@ abstract class ConcatenateAPLFunctionImpl(pos: Position) : APLFunction(pos) {
         return joinByAxis(a2, b2, axis)
     }
 
-    private fun joinNoAxis(a: APLValue, b: APLValue): APLValue {
+    private suspend fun joinNoAxis(a: APLValue, b: APLValue): APLValue {
         // This is pretty much a step-by-step reimplementation of the catenate function in the ISO spec.
         return when {
             a.rank == 0 && b.rank == 0 -> APLArrayImpl.make(dimensionsOfSize(2)) { i -> if (i == 0) a else b }
@@ -409,7 +409,7 @@ abstract class ConcatenateAPLFunctionImpl(pos: Position) : APLFunction(pos) {
             bDimensionAxis = b.dimensions[axis]
         }
 
-        override fun valueAt(p: Int): APLValue {
+        override suspend fun valueAt(p: Int): APLValue {
             val highVal = p / highValFactor
             val lowVal = p % multiplierAxis
             val axisCoord = (p % highValFactor) / multiplierAxis
@@ -485,7 +485,7 @@ class ConcatenateAPLFunctionLastAxis : APLFunctionDescriptor {
 
 class AccessFromIndexAPLFunction : APLFunctionDescriptor {
     class AccessFromIndexAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             val aFixed = a.arrayify()
             val ad = aFixed.dimensions
             if (ad.size != 1) {
@@ -508,7 +508,7 @@ class TakeArrayValue(val selection: IntArray, val source: APLValue) : APLArray()
     override val dimensions = Dimensions(selection.map { v -> v.absoluteValue }.toIntArray())
     private val sourceDimensions = source.dimensions
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val coords = dimensions.positionFromIndex(p)
         val adjusted = IntArray(coords.size) { i ->
             val d = selection[i]
@@ -525,7 +525,7 @@ class TakeArrayValue(val selection: IntArray, val source: APLValue) : APLArray()
 
 class TakeAPLFunction : APLFunctionDescriptor {
     class TakeAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             return when {
                 v is APLSingleValue -> v
@@ -535,7 +535,7 @@ class TakeAPLFunction : APLFunctionDescriptor {
             }
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             val aDimensions = a.dimensions
             if (!((aDimensions.size == 0 && b.rank == 1) ||
                         (aDimensions.size == 1 && aDimensions[0] == b.rank))
@@ -558,7 +558,7 @@ class DropArrayValue(val selection: IntArray, val source: APLValue) : APLArray()
         dimensions = Dimensions(selection.mapIndexed { index, v -> sourceDimensions[index] - v.absoluteValue }.toIntArray())
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val coords = dimensions.positionFromIndex(p)
         val adjusted = IntArray(coords.size) { i ->
             val d = selection[i]
@@ -584,16 +584,16 @@ class DropResultValueOneArg(val a: APLValue) : APLArray() {
         dimensions = dimensionsOfSize(d[0] - 1)
     }
 
-    override fun valueAt(p: Int) = a.valueAt(p + 1)
+    override suspend fun valueAt(p: Int) = a.valueAt(p + 1)
 }
 
 class DropAPLFunction : APLFunctionDescriptor {
     class DropAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             return DropResultValueOneArg(a)
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             val aDimensions = a.dimensions
             if (!((aDimensions.size == 0 && b.rank == 1) ||
                         (aDimensions.size == 1 && aDimensions[0] == b.rank))
@@ -609,7 +609,7 @@ class DropAPLFunction : APLFunctionDescriptor {
 
 class RandomAPLFunction : APLFunctionDescriptor {
     class RandomAPLFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             return if (v is APLSingleValue) {
                 makeRandom(v.ensureNumber(pos))
@@ -618,7 +618,7 @@ class RandomAPLFunction : APLFunctionDescriptor {
             }
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             val aInt = a.ensureNumber(pos).asInt()
             val bLong = b.ensureNumber(pos).asLong()
             if (aInt < 0) {
@@ -663,7 +663,7 @@ class RotatedAPLValue private constructor(val source: APLValue, val axis: Int, v
 
     override val dimensions get() = source.dimensions
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         return axisActionFactors.withFactors(p) { highVal, lowVal, axisCoord ->
             val coord = (axisCoord + numShifts).plusMod(dimensions[axis].toLong()).toInt()
             source.valueAt((highVal * axisActionFactors.highValFactor) + (coord * axisActionFactors.multipliers[axis]) + lowVal)
@@ -689,7 +689,7 @@ class InverseAPLValue private constructor(val source: APLValue, val axis: Int) :
 
     override val labels by lazy { resolveLabels() }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         return axisActionFactors.withFactors(p) { highVal, lowVal, axisCoord ->
             val coord = axisActionFactors.dimensions[axis] - axisCoord - 1
             source.valueAt((highVal * axisActionFactors.highValFactor) + (coord * axisActionFactors.multipliers[axis]) + lowVal)
@@ -724,12 +724,12 @@ class InverseAPLValue private constructor(val source: APLValue, val axis: Int) :
 }
 
 abstract class RotateFunction(pos: Position) : APLFunction(pos) {
-    override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         val axisInt = if (axis == null) defaultAxis(a) else axis.ensureNumber(pos).asInt()
         return InverseAPLValue.make(a, axisInt)
     }
 
-    override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
         val numShifts = a.ensureNumber(pos).asLong()
         val axisInt = if (axis == null) defaultAxis(b) else axis.ensureNumber(pos).asInt()
         return RotatedAPLValue.make(b, axisInt, numShifts)
@@ -781,7 +781,7 @@ class TransposedAPLValue(val transposeAxis: IntArray, val b: APLValue, pos: Posi
         multipliers = dimensions.multipliers()
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val c = dimensions.positionFromIndex(p)
         val newPos = IntArray(dimensions.size) { index -> c[transposeAxis[index]] }
         return b.valueAt(bDimensions.indexFromPosition(newPos))
@@ -800,7 +800,7 @@ class TransposedAPLValue(val transposeAxis: IntArray, val b: APLValue, pos: Posi
 
 class TransposeFunction : APLFunctionDescriptor {
     class TransposeFunctionImpl(pos: Position) : APLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
             return if (a.isScalar()) {
                 a
             } else {
@@ -810,7 +810,7 @@ class TransposeFunction : APLFunctionDescriptor {
             }
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
             val a1 = a.arrayify()
             val aDimensions = a1.dimensions
             val bDimensions = b.dimensions
@@ -836,7 +836,7 @@ class TransposeFunction : APLFunctionDescriptor {
 
 class CompareFunction : APLFunctionDescriptor {
     class CompareFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             return makeBoolean(a.compareEquals(b))
         }
     }
@@ -846,7 +846,7 @@ class CompareFunction : APLFunctionDescriptor {
 
 class CompareNotEqualFunction : APLFunctionDescriptor {
     class CompareFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             return makeBoolean(!a.compareEquals(b))
         }
     }
@@ -857,11 +857,11 @@ class CompareNotEqualFunction : APLFunctionDescriptor {
 class MemberResultValue(val context: RuntimeContext, val a: APLValue, val b: APLValue) : APLArray() {
     override val dimensions = a.dimensions
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         return findInArray(a.valueAt(p).unwrapDeferredValue())
     }
 
-    override fun unwrapDeferredValue(): APLValue {
+    override suspend fun unwrapDeferredValue(): APLValue {
         return if (dimensions.isEmpty()) {
             findInArray(a)
         } else {
@@ -869,7 +869,7 @@ class MemberResultValue(val context: RuntimeContext, val a: APLValue, val b: APL
         }
     }
 
-    private fun findInArray(target: APLValue): APLValue {
+    private suspend fun findInArray(target: APLValue): APLValue {
         b.iterateMembers { value ->
             if (target.compareEquals(value)) {
                 return APLLONG_1
@@ -881,7 +881,7 @@ class MemberResultValue(val context: RuntimeContext, val a: APLValue, val b: APL
 
 class MemberFunction : APLFunctionDescriptor {
     class MemberFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             return MemberResultValue(context, a, b)
         }
     }
@@ -896,7 +896,7 @@ class FindResultValue(val context: RuntimeContext, val a: APLValue, val b: APLVa
     private val aMultipliers = aDimensions.multipliers()
     private val bMultipliers = dimensions.multipliers()
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         val dimensionsDiff = dimensions.size - aDimensions.size
         val coord = dimensions.positionFromIndex(p)
 
@@ -910,7 +910,7 @@ class FindResultValue(val context: RuntimeContext, val a: APLValue, val b: APLVa
             }
         }
 
-        fun processOneLevel(level: Int, aCurr: Int, bCurr: Int): Boolean {
+        suspend fun processOneLevel(level: Int, aCurr: Int, bCurr: Int): Boolean {
             if (level == aDimensions.size) {
                 return a.valueAtWithScalarCheck(aCurr).compareEquals(b.valueAt(bCurr))
             } else {
@@ -935,7 +935,7 @@ class FindResultValue(val context: RuntimeContext, val a: APLValue, val b: APLVa
 
 class FindFunction : APLFunctionDescriptor {
     class FindFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             return if (b.dimensions.size == 0) {
                 if (a.compareEquals(b)) APLLONG_1 else APLLONG_0
             } else {
@@ -984,7 +984,7 @@ class SelectElementsValue(selectIndexes: IntArray, val b: APLValue, val axis: In
         axisActionFactors = AxisActionFactors(dimensions, axis)
     }
 
-    override fun valueAt(p: Int): APLValue {
+    override suspend fun valueAt(p: Int): APLValue {
         axisActionFactors.withFactors(p) { high, low, axisCoord ->
             val bIndexPos = aIndex[axisCoord]
             val resultPos = high * highMultiplier + bIndexPos * bStride + low
@@ -995,7 +995,7 @@ class SelectElementsValue(selectIndexes: IntArray, val b: APLValue, val axis: In
 
 @Suppress("IfThenToElvis")
 abstract class SelectElementsFunctionImpl(pos: Position) : APLFunction(pos) {
-    override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
         val bFixed = b.arrayify()
         val aDimensions = a.dimensions
         val bDimensions = bFixed.dimensions

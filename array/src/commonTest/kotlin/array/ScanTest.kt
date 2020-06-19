@@ -5,7 +5,7 @@ import kotlin.test.assertFailsWith
 
 class ScanTest : APLTest() {
     @Test
-    fun simpleScanTest() {
+    fun simpleScanTest() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\ 1 2 3 4").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(1, 3, 6, 10), result)
@@ -13,7 +13,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun reverseSimpleScanTest() {
+    fun reverseSimpleScanTest() = runBlockingCompat<Unit> {
         parseAPLExpression("⌽ +\\ ⍳15").let { result ->
             assertDimension(dimensionsOfSize(15), result)
             assertArrayContent(arrayOf(105, 91, 78, 66, 55, 45, 36, 28, 21, 15, 10, 6, 3, 1, 0), result)
@@ -21,7 +21,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun twoElementTest() {
+    fun twoElementTest() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\ 1 2").let { result ->
             assertDimension(dimensionsOfSize(2), result)
             assertArrayContent(arrayOf(1, 3), result)
@@ -29,7 +29,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun oneElementTest() {
+    fun oneElementTest() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\ ,1").let { result ->
             assertDimension(dimensionsOfSize(1), result)
             assertArrayContent(arrayOf(1), result)
@@ -37,21 +37,21 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun scalarElementTest() {
+    fun scalarElementTest() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\ 10").let { result ->
             assertSimpleNumber(10, result)
         }
     }
 
     @Test
-    fun emptyArray() {
+    fun emptyArray() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\ 0⍴0").let { result ->
             assertDimension(dimensionsOfSize(0), result)
         }
     }
 
     @Test
-    fun twoDimension() {
+    fun twoDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\ 2 3 ⍴ ⍳6").let { result ->
             assertDimension(dimensionsOfSize(2, 3), result)
             assertArrayContent(arrayOf(0, 1, 3, 3, 7, 12), result)
@@ -59,7 +59,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun twoDimensionWithExplicitAxis() {
+    fun twoDimensionWithExplicitAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\[0] 2 3 ⍴ ⍳6 ").let { result ->
             assertDimension(dimensionsOfSize(2, 3), result)
             assertArrayContent(arrayOf(0, 1, 2, 3, 5, 7), result)
@@ -67,7 +67,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun twoDimensionWithExplicitAxis2() {
+    fun twoDimensionWithExplicitAxis2() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\[1] 2 3 ⍴ ⍳6").let { result ->
             assertDimension(dimensionsOfSize(2, 3), result)
             assertArrayContent(arrayOf(0, 1, 3, 3, 7, 12), result)
@@ -75,7 +75,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun reversedTwoDimensionWithExplicitAxis2() {
+    fun reversedTwoDimensionWithExplicitAxis2() = runBlockingCompat<Unit> {
         parseAPLExpression("⌽[1] +\\[1] 2 3 ⍴ 1000+⍳6").let { result ->
             assertDimension(dimensionsOfSize(2, 3), result)
             assertArrayContent(arrayOf(3003, 2001, 1000, 3012, 2007, 1003), result)
@@ -83,7 +83,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun multiDimension() {
+    fun multiDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("+\\[1] 3 6 7 5 3 ⍴ ⍳100000").let { result ->
             assertDimension(dimensionsOfSize(3, 6, 7, 5, 3), result)
             assertArrayContent(
@@ -254,7 +254,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun scanFirstAxis() {
+    fun scanFirstAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("+⍀ 10 20 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(10, 20), result)
             assertArrayContent(
@@ -278,7 +278,7 @@ class ScanTest : APLTest() {
     }
 
     @Test
-    fun scanFirstAxisWithGivenAxis() {
+    fun scanFirstAxisWithGivenAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("+⍀[1] 4 5 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(4, 5), result)
             assertArrayContent(
@@ -290,7 +290,7 @@ class ScanTest : APLTest() {
 
 
     @Test
-    fun throwExceptionWithIllegalAxis() {
+    fun throwExceptionWithIllegalAxis() = runBlockingCompat<Unit> {
         assertFailsWith<IllegalAxisException> {
             parseAPLExpression("+\\[2] 2 3 ⍴ ⍳6")
         }

@@ -5,7 +5,7 @@ import kotlin.test.assertFailsWith
 
 class SelectElementsTest : APLTest() {
     @Test
-    fun plainSelect() {
+    fun plainSelect() = runBlockingCompat<Unit> {
         parseAPLExpression("1 0 1 / 1 2 3").let { result ->
             assertDimension(dimensionsOfSize(2), result)
             assertArrayContent(arrayOf(1, 3), result)
@@ -13,7 +13,7 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun multiSelect() {
+    fun multiSelect() = runBlockingCompat<Unit> {
         parseAPLExpression("3 0 2 / 1 2 3").let { result ->
             assertDimension(dimensionsOfSize(5), result)
             assertArrayContent(arrayOf(1, 1, 1, 3, 3), result)
@@ -21,21 +21,21 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun selectNone() {
+    fun selectNone() = runBlockingCompat<Unit> {
         parseAPLExpression("0 0 0 0 0 / 1 2 3 4 5").let { result ->
             assertDimension(dimensionsOfSize(0), result)
         }
     }
 
     @Test
-    fun select0FromScalar() {
+    fun select0FromScalar() = runBlockingCompat<Unit> {
         parseAPLExpression("0 / 10").let { result ->
             assertDimension(dimensionsOfSize(0), result)
         }
     }
 
     @Test
-    fun select1FromScalar() {
+    fun select1FromScalar() = runBlockingCompat<Unit> {
         parseAPLExpression("1 / 10").let { result ->
             assertDimension(dimensionsOfSize(1), result)
             assertArrayContent(arrayOf(10), result)
@@ -43,7 +43,7 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun simpleByAxis() {
+    fun simpleByAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("2 2 /[0] 2 3 ⍴ ⍳6").let { result ->
             assertDimension(dimensionsOfSize(4, 3), result)
             assertArrayContent(arrayOf(0, 1, 2, 0, 1, 2, 3, 4, 5, 3, 4, 5), result)
@@ -51,14 +51,14 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun selectInvalidAxis() {
+    fun selectInvalidAxis() = runBlockingCompat<Unit> {
         assertFailsWith<IllegalAxisException> {
             parseAPLExpression("9 9 /[2] 2 3 ⍴ ⍳6").collapse()
         }
     }
 
     @Test
-    fun simpleByDefaultAxis() {
+    fun simpleByDefaultAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("2 2 1 / 2 3 ⍴ ⍳6").let { result ->
             assertDimension(dimensionsOfSize(2, 5), result)
             assertArrayContent(arrayOf(0, 0, 1, 1, 2, 3, 3, 4, 4, 5), result)
@@ -66,21 +66,21 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun emptyResult() {
+    fun emptyResult() = runBlockingCompat<Unit> {
         parseAPLExpression("0 / ⍳100").let { result ->
             assertDimension(dimensionsOfSize(0), result)
         }
     }
 
     @Test
-    fun invalidDimension() {
+    fun invalidDimension() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("4 1 / ⍳100").collapse()
         }
     }
 
     @Test
-    fun selectByAxis0() {
+    fun selectByAxis0() = runBlockingCompat<Unit> {
         parseAPLExpression("1 2 2 /[0] 3 4 5 6 7 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(5, 4, 5, 6, 7), result)
             assertArrayContent(
@@ -383,7 +383,7 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun selectByAxis1() {
+    fun selectByAxis1() = runBlockingCompat<Unit> {
         parseAPLExpression("0 2 1 1 /[1] 3 4 5 6 7 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(3, 4, 5, 6, 7), result)
             assertArrayContent(
@@ -569,7 +569,7 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun selectByAxis4() {
+    fun selectByAxis4() = runBlockingCompat<Unit> {
         parseAPLExpression("2 1 1 /[4] 7 6 5 4 3 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(7, 6, 5, 4, 4), result)
             assertArrayContent(
@@ -814,7 +814,7 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun testLastAxis() {
+    fun testLastAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("2 2 2 ⌿ 3 2 ⍴ ⍳6").let { result ->
             assertDimension(dimensionsOfSize(6, 2), result)
             assertArrayContent(arrayOf(0, 1, 0, 1, 2, 3, 2, 3, 4, 5, 4, 5), result)
@@ -822,7 +822,7 @@ class SelectElementsTest : APLTest() {
     }
 
     @Test
-    fun lastAxisWithAxisSelection() {
+    fun lastAxisWithAxisSelection() = runBlockingCompat<Unit> {
         parseAPLExpression("2 1 1 2 ⌿[2] 2 3 4 ⍴ ⍳24").let { result ->
             assertDimension(dimensionsOfSize(2, 3, 6), result)
             assertArrayContent(

@@ -4,7 +4,7 @@ import kotlin.test.Test
 
 class FindTest : APLTest() {
     @Test
-    fun testSimple() {
+    fun testSimple() = runBlockingCompat<Unit> {
         parseAPLExpression("\"abc\" ⍷ \"fooabcaqswd\"").let { result ->
             assertDimension(dimensionsOfSize(11), result)
             assertArrayContent(arrayOf(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), result)
@@ -12,7 +12,7 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testMultipleHits() {
+    fun testMultipleHits() = runBlockingCompat<Unit> {
         parseAPLExpression("\"abc\" ⍷ \"fooabctestabc12345\"").let { result ->
             assertDimension(dimensionsOfSize(18), result)
             assertArrayContent(arrayOf(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), result)
@@ -21,7 +21,7 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun multiDimensions() {
+    fun multiDimensions() = runBlockingCompat<Unit> {
         parseAPLExpression("19 20 ⍷ 3 4 3 ⍴ 19+0 1 5 6 4 5 6").let { result ->
             assertDimension(dimensionsOfSize(3, 4, 3), result)
             assertArrayContent(
@@ -34,7 +34,7 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testLargeDimension() {
+    fun testLargeDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("(4 3 3 ⍴ 1 1 4 3 3 ↑ 1 2 1 3 1 ↓ 7 8 9 10 11 ⍴ ⍳100000) ⍷ 7 8 9 10 11 ⍴ ⍳100000").let { result ->
             assertDimension(dimensionsOfSize(7, 8, 9, 10, 11), result)
             result.iterateMembersWithPosition { v, i ->
@@ -45,7 +45,7 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testScalarTargetOneDimensionalContent() {
+    fun testScalarTargetOneDimensionalContent() = runBlockingCompat<Unit> {
         parseAPLExpression("3 ⍷ 1 2 3").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(0, 0, 1), result)
@@ -53,21 +53,21 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testScalar() {
+    fun testScalar() = runBlockingCompat<Unit> {
         assertSimpleNumber(1, parseAPLExpression("3 ⍷ 3"))
         assertSimpleNumber(0, parseAPLExpression("3 ⍷ 5"))
         assertSimpleNumber(0, parseAPLExpression("3 ⍷ @a"))
     }
 
     @Test
-    fun testNullContent() {
+    fun testNullContent() = runBlockingCompat<Unit> {
         parseAPLExpression("3 ⍷ ⍬").let { result ->
             assertDimension(dimensionsOfSize(0), result)
         }
     }
 
     @Test
-    fun testTargetHigherRank() {
+    fun testTargetHigherRank() = runBlockingCompat<Unit> {
         parseAPLExpression("(2 3 4 ⍴ ⍳100) ⍷ ⍳3").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(0, 0, 0), result)
@@ -75,7 +75,7 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testLargerTarget() {
+    fun testLargerTarget() = runBlockingCompat<Unit> {
         parseAPLExpression("(4 4 4 ⍴ ⍳100) ⍷ 2 2 2 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(2, 2, 2), result)
             assertArrayContent(arrayOf(0, 0, 0, 0, 0, 0, 0, 0), result)
@@ -83,7 +83,7 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testTargetSameSize() {
+    fun testTargetSameSize() = runBlockingCompat<Unit> {
         parseAPLExpression("100 101 102 ⍷ 100 101 102").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(1, 0, 0), result)
@@ -91,12 +91,12 @@ class FindTest : APLTest() {
     }
 
     @Test
-    fun testNullTarget() {
+    fun testNullTarget() = runBlockingCompat<Unit> {
         assertSimpleNumber(0, parseAPLExpression("⍬ ⍷ 11"))
     }
 
     @Test
-    fun singleDimensionTargetLarger() {
+    fun singleDimensionTargetLarger() = runBlockingCompat<Unit> {
         parseAPLExpression("1 2 3 4 ⍷ 1 2 3").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(0, 0, 0), result)

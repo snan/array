@@ -3,21 +3,21 @@ package array
 import array.complex.Complex
 
 abstract class Instruction(val pos: Position) {
-    abstract fun evalWithContext(context: RuntimeContext): APLValue
+    abstract suspend fun evalWithContext(context: RuntimeContext): APLValue
 }
 
 class RootEnvironmentInstruction(val environment: Environment, val instr: Instruction, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         return evalWithNewContext(context.engine)
     }
 
-    fun evalWithNewContext(engine: Engine): APLValue {
+    suspend fun evalWithNewContext(engine: Engine): APLValue {
         return instr.evalWithContext(RuntimeContext(engine, environment, engine.rootContext))
     }
 }
 
 class InstructionList(val instructions: List<Instruction>) : Instruction(instructions[0].pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         var result: APLValue? = null
         for (instr in instructions) {
             result = instr.evalWithContext(context)
@@ -30,7 +30,7 @@ class InstructionList(val instructions: List<Instruction>) : Instruction(instruc
 }
 
 class ParsedAPLList(val instructions: List<Instruction>) : Instruction(instructions[0].pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         val resultList = ArrayList<APLValue>()
         instructions.forEach { instr ->
             resultList.add(instr.evalWithContext(context))
@@ -45,7 +45,7 @@ class FunctionCall1Arg(
     val axis: Instruction?,
     pos: Position
 ) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) =
+    override suspend fun evalWithContext(context: RuntimeContext) =
         fn.eval1Arg(context, rightArgs.evalWithContext(context), axis?.evalWithContext(context))
 
     override fun toString() = "FunctionCall1Arg(fn=${fn}, rightArgs=${rightArgs})"
@@ -58,7 +58,7 @@ class FunctionCall2Arg(
     val axis: Instruction?,
     pos: Position
 ) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         val rightValue = rightArgs.evalWithContext(context)
         val leftValue = leftArgs.evalWithContext(context)
         val axisValue = axis?.evalWithContext(context)
@@ -70,15 +70,15 @@ class FunctionCall2Arg(
 
 class DynamicFunctionDescriptor(val instr: Instruction) : APLFunctionDescriptor {
     inner class DynamicFunctionImpl(pos: Position) : APLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
             return resolveFn(context).eval1Arg(context, a, axis)
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
             return resolveFn(context).eval2Arg(context, a, b, axis)
         }
 
-        private fun resolveFn(context: RuntimeContext): APLFunction {
+        private suspend fun resolveFn(context: RuntimeContext): APLFunction {
             val result = instr.evalWithContext(context)
             val v = result.unwrapDeferredValue()
             if (v !is LambdaValue) {
@@ -94,7 +94,7 @@ class DynamicFunctionDescriptor(val instr: Instruction) : APLFunctionDescriptor 
 }
 
 class VariableRef(val name: Symbol, val binding: EnvironmentBinding, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         return context.getVar(binding) ?: throw VariableNotAssigned(binding.name, pos)
     }
 
@@ -102,7 +102,7 @@ class VariableRef(val name: Symbol, val binding: EnvironmentBinding, pos: Positi
 }
 
 class Literal1DArray(val values: List<Instruction>) : Instruction(values[0].pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         val size = values.size
         val result = Array<APLValue?>(size) { null }
         for (i in (size - 1) downTo 0) {
@@ -115,45 +115,45 @@ class Literal1DArray(val values: List<Instruction>) : Instruction(values[0].pos)
 }
 
 class LiteralScalarValue(val value: Instruction) : Instruction(value.pos) {
-    override fun evalWithContext(context: RuntimeContext) = value.evalWithContext(context)
+    override suspend fun evalWithContext(context: RuntimeContext) = value.evalWithContext(context)
     override fun toString() = "LiteralScalarValue(${value})"
 }
 
 class LiteralInteger(val value: Long, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) = value.makeAPLNumber()
+    override suspend fun evalWithContext(context: RuntimeContext) = value.makeAPLNumber()
     override fun toString() = "LiteralInteger[value=$value]"
 }
 
 class LiteralDouble(val value: Double, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) = value.makeAPLNumber()
+    override suspend fun evalWithContext(context: RuntimeContext) = value.makeAPLNumber()
     override fun toString() = "LiteralDouble[value=$value]"
 }
 
 class LiteralComplex(val value: Complex, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) = value.makeAPLNumber()
+    override suspend fun evalWithContext(context: RuntimeContext) = value.makeAPLNumber()
     override fun toString() = "LiteralComplex[value=$value]"
 }
 
 class LiteralCharacter(val value: Int, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) = APLChar(value)
+    override suspend fun evalWithContext(context: RuntimeContext) = APLChar(value)
     override fun toString() = "LiteralCharacter[value=$value]"
 }
 
 class LiteralSymbol(name: Symbol, pos: Position) : Instruction(pos) {
     private val value = APLSymbol(name)
-    override fun evalWithContext(context: RuntimeContext): APLValue = value
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue = value
 }
 
 class LiteralAPLNullValue(pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) = APLNullValue()
+    override suspend fun evalWithContext(context: RuntimeContext) = APLNullValue()
 }
 
 class LiteralStringValue(val s: String, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext) = makeAPLString(s)
+    override suspend fun evalWithContext(context: RuntimeContext) = makeAPLString(s)
 }
 
 class AssignmentInstruction(val binding: EnvironmentBinding, val instr: Instruction, pos: Position) : Instruction(pos) {
-    override fun evalWithContext(context: RuntimeContext): APLValue {
+    override suspend fun evalWithContext(context: RuntimeContext): APLValue {
         val res = instr.evalWithContext(context)
         val v = res.collapse()
         context.setVar(binding, v)
@@ -168,7 +168,7 @@ class UserFunction(
     private val env: Environment
 ) : APLFunctionDescriptor {
     inner class UserFunctionImpl(pos: Position) : APLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
             if (leftFnArgs.isNotEmpty()) {
                 throw APLIllegalArgumentException("Left argument is not empty", pos)
             }
@@ -178,7 +178,7 @@ class UserFunction(
             return instr.evalWithContext(inner)
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
             val inner = context.link(env).apply {
                 assignArgs(leftFnArgs, a, pos)
                 assignArgs(rightFnArgs, b, pos)

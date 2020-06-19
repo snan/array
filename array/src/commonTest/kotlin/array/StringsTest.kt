@@ -7,62 +7,62 @@ import kotlin.test.assertTrue
 
 class StringsTest : APLTest() {
     @Test
-    fun testPrint() {
+    fun testPrint() = runBlockingCompat<Unit> {
         val out = parseWithOutput("print 200")
         assertSimpleNumber(200, out.result)
         assertEquals("200", out.output)
     }
 
     @Test
-    fun testPrintPretty() {
+    fun testPrintPretty() = runBlockingCompat<Unit> {
         val out = parseWithOutput("'pretty print \"a\"")
         assertString("a", out.result)
         assertEquals("\"a\"", out.output)
     }
 
     @Test
-    fun testPrintString() {
+    fun testPrintString() = runBlockingCompat<Unit> {
         val out = parseWithOutput("print \"a\"")
         assertString("a", out.result)
         assertEquals("a", out.output)
     }
 
     @Test
-    fun readableNumber() {
+    fun readableNumber() = runBlockingCompat<Unit> {
         val out = parseWithOutput("'read print 1")
         assertSimpleNumber(1, out.result)
         assertEquals("1", out.output)
     }
 
     @Test
-    fun readableString() {
+    fun readableString() = runBlockingCompat<Unit> {
         val out = parseWithOutput("'read print \"foo\"")
         assertString("foo", out.result)
         assertEquals("\"foo\"", out.output)
     }
 
     @Test
-    fun readableComplex() {
+    fun readableComplex() = runBlockingCompat<Unit> {
         val out = parseWithOutput("'read print 1J2")
         assertEquals(Complex(1.0, 2.0), out.result.ensureNumber().asComplex())
         assertEquals("1.0J2.0", out.output)
     }
 
     @Test
-    fun readCharsAsString() {
+    fun readCharsAsString() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("@a @b")
         assertString("ab", result)
     }
 
     @Test
-    fun nonBmpCharsInString() {
+    fun nonBmpCharsInString() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("\"\uD835\uDC9F\"")
         assertDimension(dimensionsOfSize(1), result)
         assertString("\uD835\uDC9F", result)
     }
 
     @Test
-    fun nonBmpExplicitCharacter() {
+    fun nonBmpExplicitCharacter() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("@\uD835\uDC9F")
         val v = result.unwrapDeferredValue()
         assertTrue(v is APLChar)
@@ -71,7 +71,7 @@ class StringsTest : APLTest() {
 
     class OutputResult(val engine: Engine, val output: String, val result: APLValue)
 
-    private fun parseWithOutput(expr: String): OutputResult {
+    private suspend fun parseWithOutput(expr: String): OutputResult {
         val output = StringBuilderOutput()
         val engine = Engine().apply {
             standardOutput = output

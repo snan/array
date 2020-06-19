@@ -5,7 +5,7 @@ import kotlin.test.*
 
 class TokenGeneratorTest {
     @Test
-    fun testSimpleToken() {
+    fun testSimpleToken() = runBlockingCompat<Unit> {
         val gen = makeGenerator("foo")
         val token = gen.nextToken()
         assertTokenIsSymbol(gen, token, "foo", gen.engine.initialNamespace.name)
@@ -13,7 +13,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testMultipleTokens() {
+    fun testMultipleTokens() = runBlockingCompat<Unit> {
         val gen = makeGenerator("foo bar test abc test")
         val expectedTokens = arrayOf("foo", "bar", "test", "abc", "test")
         expectedTokens.forEach { name ->
@@ -24,7 +24,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testMultipleSpaces() {
+    fun testMultipleSpaces() = runBlockingCompat<Unit> {
         val gen = makeGenerator("     foo       bar     test        ")
         val expectedTokens = arrayOf("foo", "bar", "test")
         expectedTokens.forEach { name ->
@@ -46,7 +46,7 @@ class TokenGeneratorTest {
 //    }
 
     @Test
-    fun newlinePara() {
+    fun newlinePara() = runBlockingCompat<Unit> {
         val gen = makeGenerator("foo\nbar\nabc")
         assertTokenIsSymbol(gen, gen.nextToken(), "foo", gen.engine.initialNamespace.name)
         assertSame(Newline, gen.nextToken())
@@ -56,7 +56,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun singleCharFunction() {
+    fun singleCharFunction() = runBlockingCompat<Unit> {
         val gen = makeGenerator("+-,,")
         val expectedTokens = arrayOf("+", "-", ",", ",")
         expectedTokens.forEach { name ->
@@ -67,7 +67,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun parseNumbers() {
+    fun parseNumbers() = runBlockingCompat<Unit> {
         val gen = makeGenerator("10 20 1 ¯1 ¯10")
         val expectedTokens = arrayOf(10, 20, 1, -1, -10)
         expectedTokens.forEach { value ->
@@ -79,7 +79,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun parseNumberTypes() {
+    fun parseNumberTypes() = runBlockingCompat<Unit> {
         val gen = makeGenerator("1 2 1.2 2.0 9. ¯2.3 ¯2. 0 0.0")
         assertInteger(1, gen.nextToken())
         assertInteger(2, gen.nextToken())
@@ -105,7 +105,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun parseInvalidNumbers() {
+    fun parseInvalidNumbers() = runBlockingCompat<Unit> {
         assertFailsWith<IllegalNumberFormat> {
             val gen = makeGenerator("2000a")
             gen.nextToken()
@@ -113,7 +113,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun parseComments() {
+    fun parseComments() = runBlockingCompat<Unit> {
         val gen = makeGenerator("foo ⍝ test comment")
         val token = gen.nextToken()
         assertTokenIsSymbol(gen, token, "foo", gen.engine.initialNamespace.name)
@@ -121,7 +121,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testStrings() {
+    fun testStrings() = runBlockingCompat<Unit> {
         val gen = makeGenerator("\"foo\" \"embedded\\\"quote\"")
         gen.nextToken().let { token ->
             assertTrue(token is StringToken)
@@ -135,7 +135,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testUnterminatedString() {
+    fun testUnterminatedString() = runBlockingCompat<Unit> {
         val gen = makeGenerator("\"bar")
         assertFailsWith<ParseException> {
             gen.nextToken()
@@ -143,7 +143,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testSymbolsWithNumbers() {
+    fun testSymbolsWithNumbers() = runBlockingCompat<Unit> {
         val gen = makeGenerator("a1 a2 a3b aa2233")
         gen.nextToken().let { token ->
             assertTokenIsSymbol(gen, token, "a1", gen.engine.initialNamespace.name)
@@ -161,7 +161,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testCharacters() {
+    fun testCharacters() = runBlockingCompat<Unit> {
         val gen = makeGenerator("@a @b @1 @2")
         assertTokenIsCharacter('a'.toInt(), gen.nextToken())
         assertTokenIsCharacter('b'.toInt(), gen.nextToken())
@@ -171,7 +171,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testSymbolsInStrings() {
+    fun testSymbolsInStrings() = runBlockingCompat<Unit> {
         val gen = makeGenerator("\"a\"  \"foo@bar\"  ")
         gen.nextToken().let { token ->
             assertTrue(token is StringToken)
@@ -190,7 +190,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun complexNumbers() {
+    fun complexNumbers() = runBlockingCompat<Unit> {
         val gen = makeGenerator("1j2 0j2 2j0 1J2 0J2 ¯1j2 1j¯2 ¯1j¯2")
         gen.nextToken().let { token ->
             assertTrue(token is ParsedComplex)
@@ -228,7 +228,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun testParserPosition() {
+    fun testParserPosition() = runBlockingCompat<Unit> {
         val gen = makeGenerator("foo bar 10 1.2\nx y")
         gen.nextTokenWithPosition().let { (token, pos) ->
             assertTokenIsSymbol(gen, token, "foo", gen.engine.initialNamespace.name)
@@ -273,7 +273,7 @@ class TokenGeneratorTest {
     }
 
     @Test
-    fun nonBmpStandaloneChars() {
+    fun nonBmpStandaloneChars() = runBlockingCompat<Unit> {
         val gen = makeGenerator("@\uD835\uDC9F @b")
         gen.nextToken().let { token ->
             assertTrue(token is ParsedCharacter)

@@ -4,7 +4,7 @@ import kotlin.test.*
 
 class DimensionTest {
     @Test
-    fun emptyDimensionsTest() {
+    fun emptyDimensionsTest() = runBlockingCompat<Unit> {
         val d = emptyDimensions()
         assertEquals(0, d.size)
         assertEquals(1, d.contentSize())
@@ -14,7 +14,7 @@ class DimensionTest {
     }
 
     @Test
-    fun singleDimensionTest() {
+    fun singleDimensionTest() = runBlockingCompat<Unit> {
         val d = dimensionsOfSize(10)
         assertEquals(1, d.size)
         assertEquals(10, d.contentSize())
@@ -29,7 +29,7 @@ class DimensionTest {
     }
 
     @Test
-    fun twoDimensions() {
+    fun twoDimensions() = runBlockingCompat<Unit> {
         val d = dimensionsOfSize(2, 3)
         assertEquals(2, d.size)
         assertEquals(6, d.contentSize())
@@ -43,7 +43,7 @@ class DimensionTest {
     }
 
     @Test
-    fun equalityTest() {
+    fun equalityTest() = runBlockingCompat<Unit> {
         val d0 = dimensionsOfSize(2, 3, 4)
         val d1 = dimensionsOfSize(2, 3, 4)
         assertTrue(d0.compareEquals(d1))

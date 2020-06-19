@@ -5,14 +5,14 @@ import kotlin.test.assertFailsWith
 
 class IotaTest : APLTest() {
     @Test
-    fun testIotaOneArg() {
+    fun testIotaOneArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⍳10")
         assertDimension(dimensionsOfSize(10), result)
         assertArrayContent(arrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), result)
     }
 
     @Test
-    fun testIotaSingleValue() {
+    fun testIotaSingleValue() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⍳1")
         assertDimension(dimensionsOfSize(1), result)
         assertArrayContent(arrayOf(0), result)
@@ -23,21 +23,21 @@ class IotaTest : APLTest() {
      * argument and not just plain numbers.
      */
     @Test
-    fun testIotaWithExpressionArg() {
+    fun testIotaWithExpressionArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⍳1+10")
         assertDimension(dimensionsOfSize(11), result)
         assertArrayContent(arrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), result)
     }
 
     @Test
-    fun failWithComplexArgument() {
+    fun failWithComplexArgument() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍳2J1").collapse()
         }
     }
 
     @Test
-    fun failWithCharArgument() {
+    fun failWithCharArgument() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍳@p").collapse()
         }
@@ -47,7 +47,7 @@ class IotaTest : APLTest() {
      * This should work in the future, but currently it's not supported so it should fail
      */
     @Test
-    fun failWithArrayArgument() {
+    fun failWithArrayArgument() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⍳3 4")
         }

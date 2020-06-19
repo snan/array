@@ -77,11 +77,11 @@ fun parseEvaluatedCell(cell: Cell, evaluator: FormulaEvaluator): APLValue {
 
 class LoadExcelFileFunction : APLFunctionDescriptor {
     class LoadExcelFileFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             return readExcelFile(arrayToString(a))
         }
 
-        private fun arrayToString(a: APLValue): String {
+        private suspend fun arrayToString(a: APLValue): String {
             if (a.rank != 1) {
                 throw InvalidDimensionsException("String must be rank 1", pos)
             }
@@ -96,7 +96,7 @@ class LoadExcelFileFunction : APLFunctionDescriptor {
             return buf.toString()
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             TODO("not implemented")
         }
     }

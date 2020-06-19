@@ -11,6 +11,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.text.Font
 import javafx.stage.FileChooser
 import javafx.stage.Stage
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 class Client(val application: ClientApplication, val stage: Stage) {
@@ -29,8 +30,9 @@ class Client(val application: ClientApplication, val stage: Stage) {
         engine = Engine()
         engine.addLibrarySearchPath("../array/standard-lib")
         initCustomFunctions()
-        engine.parseAndEval(StringSourceLocation("use(\"standard-lib.kap\")"), false)
-
+        runBlocking {
+            engine.parseAndEval(StringSourceLocation("use(\"standard-lib.kap\")"), false)
+        }
         engine.standardOutput = SendToMainCharacterOutput()
         calculationQueue = CalculationQueue(engine)
 
@@ -141,7 +143,7 @@ class Client(val application: ClientApplication, val stage: Stage) {
     }
 
     fun evalSource(source: SourceLocation, linkNewContext: Boolean = false) {
-        val v = engine.parseAndEval(source, linkNewContext)
+        val v = runBlocking { engine.parseAndEval(source, linkNewContext) }
         resultList.addResult(v)
     }
 

@@ -6,7 +6,7 @@ import kotlin.test.assertSame
 
 class SymbolTest : APLTest() {
     @Test
-    fun testIntern() {
+    fun testIntern() = runBlockingCompat<Unit> {
         val engine = Engine()
         val symbol1 = engine.internSymbol("symbol1")
         val symbol2 = engine.internSymbol("symbol2")
@@ -17,14 +17,14 @@ class SymbolTest : APLTest() {
     }
 
     @Test
-    fun testParseSymbol() {
+    fun testParseSymbol() = runBlockingCompat<Unit> {
         val engine = Engine()
         val result = engine.parseAndEval(StringSourceLocation("'foo"), false)
         assertSame(engine.internSymbol("foo"), result.ensureSymbol().value)
     }
 
     @Test
-    fun coreSymbol() {
+    fun coreSymbol() = runBlockingCompat<Unit> {
         val engine = Engine()
         val result = engine.parseAndEval(StringSourceLocation(":foo"), false)
         assertSame(engine.makeNamespace("core").internSymbol("foo"), result.ensureSymbol().value)

@@ -5,7 +5,7 @@ import kotlin.test.assertFailsWith
 
 class ConcatenateTest : APLTest() {
     @Test
-    fun simpleConcatenate() {
+    fun simpleConcatenate() = runBlockingCompat<Unit> {
         parseAPLExpression("1 2 3 , 4 5").let { result ->
             assertDimension(dimensionsOfSize(5), result)
             assertArrayContent(arrayOf(1, 2, 3, 4, 5), result)
@@ -13,7 +13,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun scalarWithVector() {
+    fun scalarWithVector() = runBlockingCompat<Unit> {
         parseAPLExpression("1 , 2 3 4 5").let { result ->
             assertDimension(dimensionsOfSize(5), result)
             assertArrayContent(arrayOf(1, 2, 3, 4, 5), result)
@@ -21,7 +21,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun vectorWithScalar() {
+    fun vectorWithScalar() = runBlockingCompat<Unit> {
         parseAPLExpression("1 2 3 4 , 5").let { result ->
             assertDimension(dimensionsOfSize(5), result)
             assertArrayContent(arrayOf(1, 2, 3, 4, 5), result)
@@ -29,7 +29,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun scalarWithScalar() {
+    fun scalarWithScalar() = runBlockingCompat<Unit> {
         parseAPLExpression("1 , 2").let { result ->
             assertDimension(dimensionsOfSize(2), result)
             assertArrayContent(arrayOf(1, 2), result)
@@ -37,7 +37,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun twoDimensionalConcat() {
+    fun twoDimensionalConcat() = runBlockingCompat<Unit> {
         parseAPLExpression("(4 5 ⍴ ⍳20) , 1000+⍳4").let { result ->
             assertDimension(dimensionsOfSize(4, 6), result)
             assertArrayContent(
@@ -49,7 +49,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun twoDimensionalConcatWithExplicitAxis() {
+    fun twoDimensionalConcatWithExplicitAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("(4 5 ⍴ ⍳20) ,[1] 1000+⍳4").let { result ->
             assertDimension(dimensionsOfSize(4, 6), result)
             assertArrayContent(
@@ -61,7 +61,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun twoDimensionalFirstAxis() {
+    fun twoDimensionalFirstAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("(4 5 ⍴ ⍳20) ,[0] 1000+⍳5").let { result ->
             assertDimension(dimensionsOfSize(5, 5), result)
             assertArrayContent(
@@ -73,14 +73,14 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun mismatchedDimensions() {
+    fun mismatchedDimensions() = runBlockingCompat<Unit> {
         assertFailsWith<InvalidDimensionsException> {
             parseAPLExpression("(3 4 ⍴ ⍳12) , 1 2")
         }
     }
 
     @Test
-    fun concatenateScalar() {
+    fun concatenateScalar() = runBlockingCompat<Unit> {
         parseAPLExpression("(5 6 ⍴ ⍳30) , 1234").let { result ->
             assertDimension(dimensionsOfSize(5, 7), result)
             assertArrayContent(
@@ -92,7 +92,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun concatenateWithNewDimension0() {
+    fun concatenateWithNewDimension0() = runBlockingCompat<Unit> {
         parseAPLExpression("(10 11 ⍴ ⍳110) ,[0.5] 10 11 ⍴ 10000+⍳110").let { result ->
             assertDimension(dimensionsOfSize(10, 2, 11), result)
             assertArrayContent(
@@ -120,7 +120,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun concatenateWithNewDimension1() {
+    fun concatenateWithNewDimension1() = runBlockingCompat<Unit> {
         parseAPLExpression("(10 11 ⍴ ⍳110) ,[1.5] 10 11 ⍴ 10000+⍳110").let { result ->
             assertDimension(dimensionsOfSize(10, 11, 2), result)
             assertArrayContent(
@@ -149,7 +149,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun concatenateWithFirstAxis() {
+    fun concatenateWithFirstAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("(2 3 ⍴ ⍳100) ⍪ (8 3 ⍴ 100+⍳100)").let { result ->
             assertDimension(dimensionsOfSize(10, 3), result)
             assertArrayContent(
@@ -161,7 +161,7 @@ class ConcatenateTest : APLTest() {
     }
 
     @Test
-    fun concatenateWithFirstAxisAndAxisSpecifier() {
+    fun concatenateWithFirstAxisAndAxisSpecifier() = runBlockingCompat<Unit> {
         parseAPLExpression("(3 10 ⍴ ⍳100) ⍪[1] (3 15 ⍴ 100+⍳100)").let { result ->
             assertDimension(dimensionsOfSize(3, 25), result)
             assertArrayContent(

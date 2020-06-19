@@ -6,19 +6,19 @@ import kotlin.test.assertSame
 
 class EvalLambdaFunc : APLTest() {
     @Test
-    fun simpleLambdaStatement() {
+    fun simpleLambdaStatement() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("a ← λ { 1 + ⍵ } ◊ (⍞a 1) + ⍞a 5")
         assertSimpleNumber(8, result)
     }
 
     @Test
-    fun simpleTestTwoArg() {
+    fun simpleTestTwoArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("foo ← λ{⍺+⍵+1} ◊ 10 ⍞foo 3000")
         assertSimpleNumber(3011, result)
     }
 
     @Test
-    fun callWithArray1ArgAndLeftExpression() {
+    fun callWithArray1ArgAndLeftExpression() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("foo ← λ{⍵+1} ◊ 20 + ⍞foo 10 20 30 40")
         assertArrayContent(arrayOf(31, 41, 51, 61), result)
     }
@@ -27,40 +27,40 @@ class EvalLambdaFunc : APLTest() {
      * This test should fail, since the lambda function expects a left argument, but there is none provided.
      */
     @Test
-    fun callWithArray2ArgAndLeftExpressionError() {
+    fun callWithArray2ArgAndLeftExpressionError() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("foo ← λ{⍺+⍵+1} ◊ 20 + ⍞foo 10 20 30 40")
         }
     }
 
     @Test
-    fun callWithArray2ArgAndLeftExpression() {
+    fun callWithArray2ArgAndLeftExpression() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("foo ← λ{⍺+⍵+1} ◊ 20 + 6 ⍞foo 10 20 30 40")
         assertArrayContent(arrayOf(37, 47, 57, 67), result)
     }
 
     @Test
-    fun applyOnNonFunction() {
+    fun applyOnNonFunction() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("x ← 1 ◊ ⍞x 10")
         }
     }
 
     @Test
-    fun applyOnExpression() {
+    fun applyOnExpression() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("foo ← λ { 1 + ⍵ } ◊ bar ← λ { ⍵ } ◊ ⍞(⍞bar foo) 7")
         assertSimpleNumber(8, result)
     }
 
     @Test
-    fun typeOfSimpleLambda() {
+    fun typeOfSimpleLambda() = runBlockingCompat<Unit> {
         val engine = Engine()
         val result = evalWithEngine(engine, "typeof λ { 1 + ⍵ }")
         assertSymbolName(engine, "function", result)
     }
 
     @Test
-    fun arrayOfFunctionTypes() {
+    fun arrayOfFunctionTypes() = runBlockingCompat<Unit> {
         val engine = Engine()
         val result = evalWithEngine(engine, "(typeof λ { 1 + ⍵ }) (typeof λ { 5 + ⍵ })")
         assertDimension(dimensionsOfSize(2), result)
@@ -69,7 +69,7 @@ class EvalLambdaFunc : APLTest() {
     }
 
     @Test
-    fun arrayOfFunctions() {
+    fun arrayOfFunctions() = runBlockingCompat<Unit> {
         val engine = Engine()
         val result = evalWithEngine(engine, "x←λ { 1 + ⍵ } λ { 5 + ⍵ } ◊ (typeof x) (typeof 0⌷x)")
         assertDimension(dimensionsOfSize(2), result)
@@ -78,17 +78,17 @@ class EvalLambdaFunc : APLTest() {
     }
 
     @Test
-    fun applyWithOperator() {
+    fun applyWithOperator() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("x←λ { 1 + ⍵ } ◊ ⍞x¨ 1 2 3 4")
         assertDimension(dimensionsOfSize(4), result)
         assertArrayContent(arrayOf(2, 3, 4, 5), result)
     }
 
-    private fun evalWithEngine(engine: Engine, expr: String): APLValue {
+    private suspend fun evalWithEngine(engine: Engine, expr: String): APLValue {
         return engine.parseAndEval(StringSourceLocation(expr), false)
     }
 
-    private fun assertSymbolName(engine: Engine, name: String, value: APLValue) {
+    private suspend fun assertSymbolName(engine: Engine, name: String, value: APLValue) {
         assertSame(engine.internSymbol(name), value.ensureSymbol().value)
     }
 }

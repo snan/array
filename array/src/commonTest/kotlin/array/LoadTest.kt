@@ -4,7 +4,7 @@ import kotlin.test.Test
 
 class LoadTest : APLTest() {
     @Test
-    fun loadSimpleSource() {
+    fun loadSimpleSource() = runBlockingCompat<Unit> {
         val engine = Engine()
         val res0 = engine.parseAndEval(StringSourceLocation("load \"test-data/test-source.kap\""), false)
         assertSimpleNumber(10, res0)
@@ -13,7 +13,7 @@ class LoadTest : APLTest() {
     }
 
     @Test
-    fun ensureLoadPreservesOldNamespace() {
+    fun ensureLoadPreservesOldNamespace() = runBlockingCompat<Unit> {
         val engine = Engine()
         val res0 = engine.parseAndEval(StringSourceLocation("namespace(\"a\") x←1 ◊ load \"test-data/test-source.kap\""), false)
         assertSimpleNumber(10, res0)
@@ -24,7 +24,7 @@ class LoadTest : APLTest() {
     }
 
     @Test
-    fun ensureLoadPreservesOldNamespaceOnError() {
+    fun ensureLoadPreservesOldNamespaceOnError() = runBlockingCompat<Unit> {
         val engine = Engine()
         try {
             engine.parseAndEval(StringSourceLocation("namespace(\"a\") x←1 ◊ load \"test-data/parse-error.kap\""), false)

@@ -4,26 +4,26 @@ import kotlin.test.Test
 
 class OperatorsTest : APLTest() {
     @Test
-    fun commuteTwoArgs() {
+    fun commuteTwoArgs() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("4÷⍨160")
         assertSimpleNumber(40, result)
     }
 
     @Test
-    fun commuteOneArg() {
+    fun commuteOneArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+⍨3")
         assertSimpleNumber(6, result)
     }
 
     @Test
-    fun commuteWithArrays() {
+    fun commuteWithArrays() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("2÷⍨8×⍳10")
         assertDimension(dimensionsOfSize(10), result)
         assertArrayContent(arrayOf(0, 4, 8, 12, 16, 20, 24, 28, 32, 36), result)
     }
 
     @Test
-    fun multiOperators() {
+    fun multiOperators() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+⌺⍨1 2 3")
         assertDimension(dimensionsOfSize(3, 3), result)
         assertArrayContent(arrayOf(2, 3, 4, 3, 4, 5, 4, 5, 6), result)

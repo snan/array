@@ -6,42 +6,42 @@ import kotlin.test.assertTrue
 
 class TakeTest : APLTest() {
     @Test
-    fun testDropSimple() {
+    fun testDropSimple() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("↓1 2 3 4")
         assertDimension(dimensionsOfSize(3), result)
         assertArrayContent(arrayOf(2, 3, 4), result)
     }
 
     @Test
-    fun testDropFunctionResult() {
+    fun testDropFunctionResult() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("↓10 + 1 2 3 4")
         assertDimension(dimensionsOfSize(3), result)
         assertArrayContent(arrayOf(12, 13, 14), result)
     }
 
     @Test
-    fun testDropFromArray1() {
+    fun testDropFromArray1() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("↓,1")
         assertDimension(dimensionsOfSize(0), result)
         assertEquals(0, result.size)
     }
 
     @Test
-    fun testTakeSimple() {
+    fun testTakeSimple() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("↑1 2 3 4")
         assertTrue(result.isScalar())
         assertEquals(1L, result.ensureNumber().asLong())
     }
 
     @Test
-    fun testTakeFromArray1() {
+    fun testTakeFromArray1() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("↑,1")
         assertTrue(result.isScalar())
         assertEquals(1L, result.ensureNumber().asLong())
     }
 
     @Test
-    fun takeSingleDimension() {
+    fun takeSingleDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("3 ↑ 10 11 12 13 14 15 16 17").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(10, 11, 12), result)
@@ -49,7 +49,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun takeMultiDimension() {
+    fun takeMultiDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("2 3 ↑ 10 15 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(2, 3), result)
             assertArrayContent(arrayOf(0, 1, 2, 15, 16, 17), result)
@@ -57,7 +57,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun dropSingleDimension() {
+    fun dropSingleDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("2 ↓ 100 200 300 400 500 600 700 800").let { result ->
             assertDimension(dimensionsOfSize(6), result)
             assertArrayContent(arrayOf(300, 400, 500, 600, 700, 800), result)
@@ -65,7 +65,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun dropMultiDimension() {
+    fun dropMultiDimension() = runBlockingCompat<Unit> {
         parseAPLExpression("20 34 ↓ 30 40 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(10, 6), result)
             assertArrayContent(
@@ -79,7 +79,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun fourDimensionalDrop() {
+    fun fourDimensionalDrop() = runBlockingCompat<Unit> {
         parseAPLExpression("10 ¯20 ¯32 2 ↓ 14 30 40 4 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(4, 10, 8, 2), result)
             assertArrayContent(
@@ -134,7 +134,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun takeWithNegativeArg() {
+    fun takeWithNegativeArg() = runBlockingCompat<Unit> {
         parseAPLExpression("¯2 ↑ 100 200 300 400 500 600 700 800 900 1000 1100, 1200").let { result ->
             assertDimension(dimensionsOfSize(2), result)
             assertArrayContent(arrayOf(1100, 1200), result)
@@ -142,7 +142,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun takeMultiDimensionalWithNegativeArg() {
+    fun takeMultiDimensionalWithNegativeArg() = runBlockingCompat<Unit> {
         parseAPLExpression("¯17 ¯20 ↑ 30 40 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(17, 20), result)
             assertArrayContent(
@@ -176,7 +176,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun dropWithNegativeArg() {
+    fun dropWithNegativeArg() = runBlockingCompat<Unit> {
         parseAPLExpression("¯2 ↓ 1 2 3 4 5 6").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(1, 2, 3, 4), result)
@@ -184,7 +184,7 @@ class TakeTest : APLTest() {
     }
 
     @Test
-    fun dropMultiDimensionalWithNegativeArg() {
+    fun dropMultiDimensionalWithNegativeArg() = runBlockingCompat<Unit> {
         parseAPLExpression("¯26 ¯32 ↓ 30 40 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(4, 8), result)
             assertArrayContent(

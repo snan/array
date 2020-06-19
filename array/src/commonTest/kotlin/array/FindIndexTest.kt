@@ -4,7 +4,7 @@ import kotlin.test.Test
 
 class FindIndexTest : APLTest() {
     @Test
-    fun singleIndex() {
+    fun singleIndex() = runBlockingCompat<Unit> {
         parseAPLExpression("30 ⍳ 10 20 30 40").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(1, 1, 0, 1), result)
@@ -12,7 +12,7 @@ class FindIndexTest : APLTest() {
     }
 
     @Test
-    fun multiIndexes() {
+    fun multiIndexes() = runBlockingCompat<Unit> {
         parseAPLExpression("10 60 ⍳ 10 20 30 40 50 60").let { result ->
             assertDimension(dimensionsOfSize(6), result)
             assertArrayContent(arrayOf(0, 2, 2, 2, 2, 1), result)

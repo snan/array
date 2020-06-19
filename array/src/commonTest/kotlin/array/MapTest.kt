@@ -5,7 +5,7 @@ import kotlin.test.*
 
 class MapTest {
     @Test
-    fun simpleMapTest() {
+    fun simpleMapTest() = runBlockingCompat<Unit> {
         val map = ImmutableMap<String, Int>()
         assertEquals(0, map.size)
 
@@ -26,7 +26,7 @@ class MapTest {
     }
 
     @Test
-    fun removeTest() {
+    fun removeTest() = runBlockingCompat<Unit> {
         val map = ImmutableMap<String, Int>()
         assertEquals(0, map.size)
 
@@ -52,7 +52,7 @@ class MapTest {
     }
 
     @Test
-    fun randomAddRemove() {
+    fun randomAddRemove() = runBlockingCompat<Unit> {
         var map = ImmutableMap<Int, Int>()
 
         fun addN(n: Int) {

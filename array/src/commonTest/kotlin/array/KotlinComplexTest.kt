@@ -10,13 +10,13 @@ import kotlin.test.assertTrue
 
 class KotlinComplexTest {
     @Test
-    fun addSimple() {
+    fun addSimple() = runBlockingCompat<Unit> {
         val result = Complex(1.0, 2.0) + Complex(100.0, 200.0)
         assertEquals(Complex(101.0, 202.0), result)
     }
 
     @Test
-    fun addWithDouble() {
+    fun addWithDouble() = runBlockingCompat<Unit> {
         val result1 = Complex(1.0, 2.0) + 100.0
         assertEquals(Complex(101.0, 2.0), result1)
         val result2 = 100.0 + Complex(1.0, 2.0)
@@ -24,19 +24,19 @@ class KotlinComplexTest {
     }
 
     @Test
-    fun addWithZero() {
+    fun addWithZero() = runBlockingCompat<Unit> {
         val result = Complex(1.0, 2.0) + Complex.ZERO
         assertEquals(Complex(1.0, 2.0), result)
     }
 
     @Test
-    fun multSimple() {
+    fun multSimple() = runBlockingCompat<Unit> {
         val result = Complex(2.0, 3.0) * Complex(10.0, 11.0)
         assertEquals(Complex(-13.0, 52.0), result)
     }
 
     @Test
-    fun mulWithDouble() {
+    fun mulWithDouble() = runBlockingCompat<Unit> {
         val result1 = Complex(2.0, 3.0) * 3.0
         assertEquals(Complex(6.0, 9.0), result1)
         val result2 = 3.0 * Complex(2.0, 3.0)
@@ -44,13 +44,13 @@ class KotlinComplexTest {
     }
 
     @Test
-    fun subSimple() {
+    fun subSimple() = runBlockingCompat<Unit> {
         val result = Complex(20.0, 21.0) - Complex(3.0, 1.0)
         assertEquals(Complex(17.0, 20.0), result)
     }
 
     @Test
-    fun subWithDouble() {
+    fun subWithDouble() = runBlockingCompat<Unit> {
         val result1 = Complex(3.0, 4.0) - 2.0
         assertEquals(Complex(1.0, 4.0), result1)
         val result2 = 2.0 - Complex(3.0, 4.0)
@@ -58,7 +58,7 @@ class KotlinComplexTest {
     }
 
     @Test
-    fun exponents() {
+    fun exponents() = runBlockingCompat<Unit> {
         //#C(-2.044201815541423d0 -3.0781516382992966d0)
         assertComplex(Pair(-2.044202, -2.0442), Pair(-3.0781523, -3.07815162), Complex(1.0, 2.0).pow(Complex(3.0, 1.0)))
         //#C(-27.436381991606034d0 -19.7893103650107d0)

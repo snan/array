@@ -7,32 +7,32 @@ interface APLFunctionDescriptor {
 }
 
 abstract class APLFunction(val pos: Position) {
-    open fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue = throw Unimplemented1ArgException(pos)
-    open fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue =
+    open suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue = throw Unimplemented1ArgException(pos)
+    open suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue =
         throw Unimplemented2ArgException(pos)
 
     open fun identityValue(): APLValue = throw APLIncompatibleDomainsException("Function does not have an identity value", pos)
 }
 
 abstract class NoAxisAPLFunction(pos: Position) : APLFunction(pos) {
-    override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
         if (axis != null) {
             throw AxisNotSupported(pos)
         }
         return eval1Arg(context, a)
     }
 
-    open fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue = throw Unimplemented1ArgException(pos)
+    open suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue = throw Unimplemented1ArgException(pos)
 
 
-    override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+    override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
         if (axis != null) {
             throw AxisNotSupported(pos)
         }
         return eval2Arg(context, a, b)
     }
 
-    open fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue = throw Unimplemented2ArgException(pos)
+    open suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue = throw Unimplemented2ArgException(pos)
 }
 
 class DeclaredFunction(
@@ -42,13 +42,13 @@ class DeclaredFunction(
     val env: Environment
 ) : APLFunctionDescriptor {
     inner class DeclaredFunctionImpl(pos: Position) : APLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
             val localContext = context.link(env)
             localContext.setVar(rightArgName, a)
             return instruction.evalWithContext(localContext)
         }
 
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
             val localContext = context.link(env)
             localContext.setVar(leftArgName, a)
             localContext.setVar(rightArgName, b)
@@ -247,7 +247,7 @@ class Engine {
     fun getFunction(name: Symbol) = functions[resolveAlias(name)]
     fun getOperator(name: Symbol) = operators[resolveAlias(name)]
 
-    fun parseAndEval(source: SourceLocation, newContext: Boolean): APLValue {
+    suspend fun parseAndEval(source: SourceLocation, newContext: Boolean): APLValue {
         val parser = APLParser(TokenGenerator(this, source))
         val instr = parser.parseValueToplevel(EndOfFile)
         return if (newContext) {
@@ -360,7 +360,7 @@ class RuntimeContext(val engine: Engine, val environment: Environment, val paren
 
     fun link(env: Environment): RuntimeContext = RuntimeContext(engine, env, this)
 
-    fun assignArgs(args: List<EnvironmentBinding>, a: APLValue, pos: Position? = null) {
+    suspend fun assignArgs(args: List<EnvironmentBinding>, a: APLValue, pos: Position? = null) {
         fun checkLength(expectedLength: Int, actualLength: Int) {
             if (expectedLength != actualLength) {
                 throw APLIllegalArgumentException("Argument mismatch. Expected: ${expectedLength}, actual length: ${actualLength}", pos)

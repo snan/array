@@ -10,69 +10,69 @@ import kotlin.test.assertTrue
 
 class ScalarTest : APLTest() {
     @Test
-    fun testReshape() {
+    fun testReshape() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("3 4 ⍴ ⍳100")
         assertDimension(dimensionsOfSize(3, 4), result)
         assertArrayContent(arrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), result)
     }
 
     @Test
-    fun testAdd() {
+    fun testAdd() = runBlockingCompat<Unit> {
         runScalarTest("+") { a, b -> a + b }
     }
 
     @Test
-    fun testSub() {
+    fun testSub() = runBlockingCompat<Unit> {
         runScalarTest("-") { a, b -> a - b }
     }
 
     @Test
-    fun testMul() {
+    fun testMul() = runBlockingCompat<Unit> {
         runScalarTest("×") { a, b -> a * b }
     }
 
     @Test
-    fun testDiv() {
+    fun testDiv() = runBlockingCompat<Unit> {
         runScalarTest("÷") { a, b -> a / b }
     }
 
     @Test
-    fun testPow() {
+    fun testPow() = runBlockingCompat<Unit> {
         runScalarTest("⋆") { a, b -> a.pow(b) }
     }
 
     @Test
-    fun testAdd1Arg() {
+    fun testAdd1Arg() = runBlockingCompat<Unit> {
         runScalarTest1Arg("+") { a -> a }
     }
 
     @Test
-    fun testSub1Arg() {
+    fun testSub1Arg() = runBlockingCompat<Unit> {
         runScalarTest1Arg("-") { a -> -a }
     }
 
     @Test
-    fun testMulArg() {
+    fun testMulArg() = runBlockingCompat<Unit> {
         runScalarTest1Arg("×") { a -> a.sign }
     }
 
     @Test
-    fun testDivArg() {
+    fun testDivArg() = runBlockingCompat<Unit> {
         runScalarTest1Arg("÷") { a -> if (a == 0.0) 0.0 else 1 / a }
     }
 
     @Test
-    fun testCompareEquals() {
+    fun testCompareEquals() = runBlockingCompat<Unit> {
         runScalarTest("=") { a, b -> if (a == b) 1.0 else 0.0 }
     }
 
     @Test
-    fun testCompareNotEquals() {
+    fun testCompareNotEquals() = runBlockingCompat<Unit> {
         runScalarTest("≠") { a, b -> if (a != b) 1.0 else 0.0 }
     }
 
     @Test
-    fun additionWithAxis0() {
+    fun additionWithAxis0() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("10 20 30 40 +[0] 4 3 2 ⍴ 100+⍳24")
         assertDimension(dimensionsOfSize(4, 3, 2), result)
         assertArrayContent(
@@ -82,7 +82,7 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun additionWithAxis1() {
+    fun additionWithAxis1() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("10 20 30 +[1] 4 3 2 ⍴ 100+⍳24")
         assertDimension(dimensionsOfSize(4, 3, 2), result)
         assertArrayContent(
@@ -92,7 +92,7 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun additionWithAxis2() {
+    fun additionWithAxis2() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("10 20 +[2] 4 3 2 ⍴ 100+⍳24")
         assertDimension(dimensionsOfSize(4, 3, 2), result)
         assertArrayContent(
@@ -103,14 +103,14 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun failWithWrongRank() {
+    fun failWithWrongRank() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("(2 3 ⍴ ⍳6) +[0] 2 3 4 ⍴ ⍳24")
         }
     }
 
     @Test
-    fun testMax() {
+    fun testMax() = runBlockingCompat<Unit> {
         // ints
         runMaxTest(2, "⌈", "1", "2")
         runMaxTest(0, "⌈", "0", "0")
@@ -145,7 +145,7 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun testMin() {
+    fun testMin() = runBlockingCompat<Unit> {
         runMaxTest(1, "⌊", "1", "2")
         runMaxTest(0, "⌊", "0", "0")
         runMaxTest(0, "⌊", "1", "0")
@@ -179,7 +179,7 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun minComparingIncompatibleTypes() {
+    fun minComparingIncompatibleTypes() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("@a⌈1").collapse()
         }
@@ -195,7 +195,7 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun testCeiling() {
+    fun testCeiling() = runBlockingCompat<Unit> {
         assertSimpleDouble(2.0, parseAPLExpression("⌈1.4"))
         assertSimpleDouble(3.0, parseAPLExpression("⌈2.9"))
         assertSimpleDouble(-3.0, parseAPLExpression("⌈¯3.1"))
@@ -207,7 +207,7 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun testFloor() {
+    fun testFloor() = runBlockingCompat<Unit> {
         assertSimpleDouble(5.0, parseAPLExpression("⌊5.9"))
         assertSimpleDouble(3.0, parseAPLExpression("⌊3.1"))
         assertSimpleDouble(-6.0, parseAPLExpression("⌊¯5.1"))
@@ -220,21 +220,21 @@ class ScalarTest : APLTest() {
     }
 
     @Test
-    fun ceilingWithIllegalType() {
+    fun ceilingWithIllegalType() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⌈@a").collapse()
         }
     }
 
     @Test
-    fun failWithWrongDimension() {
+    fun failWithWrongDimension() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("1 2 3 4 +[0] 5 6 7 ⍴ ⍳24")
         }
     }
 
     @Test
-    fun floorWithIllegalType() {
+    fun floorWithIllegalType() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("⌊@x").collapse()
         }
@@ -242,26 +242,26 @@ class ScalarTest : APLTest() {
 
     @Test
 
-    fun failWithWrongAxis() {
+    fun failWithWrongAxis() = runBlockingCompat<Unit> {
         assertFailsWith<APLEvalException> {
             parseAPLExpression("1 2 3 4 +[3] 5 6 7 ⍴ ⍳24")
         }
     }
 
     @Test
-    fun floorConvertsComplexToDouble() {
+    fun floorConvertsComplexToDouble() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⌊3.4J0.01")
         val v = result.unwrapDeferredValue()
         assertTrue(v is APLDouble, "expected APLDouble, actual type: ${v::class.qualifiedName}")
         assertSimpleDouble(3.0, v)
     }
 
-    private fun runMaxTest(expected: Any, op: String, a: String, b: String) {
+    private suspend fun runMaxTest(expected: Any, op: String, a: String, b: String) {
         assertAPLValue(expected, parseAPLExpression("${a}${op}${b}"))
         assertAPLValue(expected, parseAPLExpression("${b}${op}${a}"))
     }
 
-    private fun runScalarTest1Arg(functionName: String, doubleFn: (Double) -> Double) {
+    private suspend fun runScalarTest1Arg(functionName: String, doubleFn: (Double) -> Double) {
         val result = parseAPLExpression("${functionName} ¯4.0+⍳10")
         assertDimension(dimensionsOfSize(10), result)
         for (i in 0 until result.dimensions[0]) {
@@ -273,12 +273,12 @@ class ScalarTest : APLTest() {
         }
     }
 
-    private fun runScalarTest(functionName: String, doubleFn: (Double, Double) -> Double) {
+    private suspend fun runScalarTest(functionName: String, doubleFn: (Double, Double) -> Double) {
         runScalarTestSD(functionName, doubleFn)
         runScalarTestDS(functionName, doubleFn)
     }
 
-    private fun runScalarTestSD(functionName: String, doubleFn: (Double, Double) -> Double) {
+    private suspend fun runScalarTestSD(functionName: String, doubleFn: (Double, Double) -> Double) {
         val result = parseAPLExpression("100 $functionName 100+3 4 ⍴ ⍳100")
         assertDimension(dimensionsOfSize(3, 4), result)
         for (i in 0 until result.size) {
@@ -290,7 +290,7 @@ class ScalarTest : APLTest() {
         }
     }
 
-    private fun runScalarTestDS(functionName: String, doubleFn: (Double, Double) -> Double) {
+    private suspend fun runScalarTestDS(functionName: String, doubleFn: (Double, Double) -> Double) {
         val result = parseAPLExpression("(100+3 4 ⍴ ⍳100) $functionName 10")
         assertDimension(dimensionsOfSize(3, 4), result)
         for (i in 0 until result.size) {

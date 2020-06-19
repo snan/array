@@ -6,7 +6,7 @@ import kotlin.test.assertFailsWith
 
 class SyntaxText : APLTest() {
     @Test
-    fun simpleCustomSyntax() {
+    fun simpleCustomSyntax() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax foo (:value x) { x + 10 }
@@ -16,7 +16,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun constants() {
+    fun constants() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax foo (:constant x) { 10 }
@@ -26,7 +26,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun nonMatchedConstants() {
+    fun nonMatchedConstants() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression(
                 """
@@ -37,7 +37,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun valueArg() {
+    fun valueArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax foo (:value x) { x + 1 }
@@ -47,7 +47,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun doubleValueArg() {
+    fun doubleValueArg() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax foo (:value x :value y) { x + y }
@@ -57,7 +57,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun ifTestWithOptionalElse() {
+    fun ifTestWithOptionalElse() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax xif (:value cond :function thenStatement :optional (:constant xelse :function elseStatement)) {
@@ -72,7 +72,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun ifTestWithElse() {
+    fun ifTestWithElse() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax xif (:value cond :function thenStatement :optional (:constant xelse :function elseStatement)) {
@@ -85,7 +85,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun ifTest() {
+    fun ifTest() = runBlockingCompat<Unit> {
         val result = parseAPLExpression(
             """
             |defsyntax xif (:value cond :function thenStatement :constant xelse :function elseStatement) {
@@ -98,7 +98,7 @@ class SyntaxText : APLTest() {
     }
 
     @Test
-    fun xifWithSideEffect() {
+    fun xifWithSideEffect() = runBlockingCompat<Unit> {
         val (result, output) = parseAPLExpressionWithOutput(
             """
             |defsyntax xif (:value cond :function thenStatement :constant xelse :function elseStatement) {

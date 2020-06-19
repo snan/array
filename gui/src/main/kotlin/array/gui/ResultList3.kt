@@ -8,6 +8,7 @@ import javafx.scene.Node
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.text.TextFlow
+import kotlinx.coroutines.runBlocking
 import org.fxmisc.flowless.VirtualizedScrollPane
 import org.fxmisc.richtext.model.GenericEditableStyledDocument
 import org.fxmisc.richtext.model.SegmentOpsBase
@@ -64,7 +65,9 @@ class ResultList3(val client: Client) {
     fun getNode() = scrollArea
 
     fun addResult(v: APLValue) {
-        styledArea.appendTextEnd(v.formatted(FormatStyle.PRETTY) + "\n", TextStyle(TextStyle.Type.RESULT))
+        runBlocking {
+            styledArea.appendTextEnd(v.formatted(FormatStyle.PRETTY) + "\n", TextStyle(TextStyle.Type.RESULT))
+        }
     }
 
     fun addExceptionResult(e: Exception) {

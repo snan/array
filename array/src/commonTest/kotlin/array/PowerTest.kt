@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class PowerTest : APLTest() {
     @Test
-    fun simpleCount() {
+    fun simpleCount() = runBlockingCompat<Unit> {
         parseAPLExpressionWithOutput("{(⍵-1) ⊣ print ⍵}⍣{⍵=0} 9").let { (result, out) ->
             assertSimpleNumber(-1, result)
             assertEquals("9876543210", out)
@@ -13,7 +13,7 @@ class PowerTest : APLTest() {
     }
 
     @Test
-    fun simpleCountCheckRightArg() {
+    fun simpleCountCheckRightArg() = runBlockingCompat<Unit> {
         parseAPLExpressionWithOutput("{(⍵-1) ⊣ print ⍵}⍣{⍺=1} 9").let { (result, out) ->
             assertSimpleNumber(1, result)
             assertEquals("98765432", out)

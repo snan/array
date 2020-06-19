@@ -5,14 +5,14 @@ import kotlin.test.assertFailsWith
 
 class NumbersTest : APLTest() {
     @Test
-    fun testMathsOperations() {
+    fun testMathsOperations() = runBlockingCompat<Unit> {
         assertMathsOperation({ a, b -> a + b }, "+")
         assertMathsOperation({ a, b -> a - b }, "-")
         assertMathsOperation({ a, b -> a * b }, "×")
     }
 
     @Test
-    fun testDivision() {
+    fun testDivision() = runBlockingCompat<Unit> {
         assertSimpleNumber(0, parseAPLExpression("1÷0"))
         assertSimpleNumber(0, parseAPLExpression("100÷0"))
         assertSimpleNumber(0, parseAPLExpression("¯100÷0"))
@@ -25,7 +25,7 @@ class NumbersTest : APLTest() {
     }
 
     @Test
-    fun testAbs() {
+    fun testAbs() = runBlockingCompat<Unit> {
         // Plain integers
         assertSimpleNumber(2, parseAPLExpression("|2"))
         assertSimpleNumber(10, parseAPLExpression("|¯10"))
@@ -40,7 +40,7 @@ class NumbersTest : APLTest() {
     }
 
     @Test
-    fun testMod() {
+    fun testMod() = runBlockingCompat<Unit> {
         assertSimpleNumber(1, parseAPLExpression("2|3"))
         assertDoubleWithRange(Pair(0.66669, 0.700001), parseAPLExpression("1|1.7"))
         assertSimpleNumber(-1, parseAPLExpression("¯2|11"))
@@ -50,7 +50,7 @@ class NumbersTest : APLTest() {
     }
 
     @Test
-    fun testNegation() {
+    fun testNegation() = runBlockingCompat<Unit> {
         assertSimpleNumber(0, parseAPLExpression("-0"))
         assertSimpleNumber(1, parseAPLExpression("-(1-2)"))
         assertSimpleNumber(-3, parseAPLExpression("-3"))
@@ -58,7 +58,7 @@ class NumbersTest : APLTest() {
     }
 
     @Test
-    fun testExponential() {
+    fun testExponential() = runBlockingCompat<Unit> {
         assertSimpleNumber(1024, parseAPLExpression("2⋆10"))
         assertDoubleWithRange(Pair(0.0009, 0.0011), parseAPLExpression("10⋆¯3"))
         assertSimpleNumber(0, parseAPLExpression("0⋆10"))
@@ -66,7 +66,7 @@ class NumbersTest : APLTest() {
     }
 
     @Test
-    fun invalidExpressions() {
+    fun invalidExpressions() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("1+")
         }
@@ -82,7 +82,7 @@ class NumbersTest : APLTest() {
     }
 
     @Test
-    fun mathOperationsWithCharacters() {
+    fun mathOperationsWithCharacters() = runBlockingCompat<Unit> {
         testFailedOpWithChar("+")
         testFailedOpWithChar("-")
         testFailedOpWithChar("×")
@@ -91,19 +91,19 @@ class NumbersTest : APLTest() {
         testFailedOpWithChar("|")
     }
 
-    private fun testFailedOpWithChar(name: String) {
+    private suspend fun testFailedOpWithChar(name: String) {
         assertFailsWith<APLEvalException> { parseAPLExpression("1${name}@a").collapse() }
         assertFailsWith<APLEvalException> { parseAPLExpression("@a${name}1").collapse() }
         assertFailsWith<APLEvalException> { parseAPLExpression("@a${name}@b").collapse() }
     }
 
     @Test
-    fun functionAliases() {
+    fun functionAliases() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("2*4")
         assertSimpleNumber(16, result)
     }
 
-    private fun assertMathsOperation(op: (Long, Long) -> Long, name: String) {
+    private suspend fun assertMathsOperation(op: (Long, Long) -> Long, name: String) {
         val args: Array<Long> =
             arrayOf(0, 1, -1, 2, 3, 10, 100, 123456, -12345, Int.MAX_VALUE.toLong(), Int.MIN_VALUE.toLong(), Long.MAX_VALUE, Long.MIN_VALUE)
         args.forEach { left ->

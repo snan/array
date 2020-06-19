@@ -3,8 +3,7 @@ package array
 import array.complex.Complex
 
 abstract class APLNumber : APLSingleValue() {
-    override fun toString() = "APLNumber(${formatted(FormatStyle.PRETTY)})"
-    override fun ensureNumber(pos: Position?) = this
+    override suspend fun ensureNumber(pos: Position?) = this
 
     abstract fun asDouble(): Double
     abstract fun asLong(): Long
@@ -21,7 +20,7 @@ abstract class APLNumber : APLSingleValue() {
         }
     }
 
-    override fun asBoolean() = asInt() != 0
+    override suspend fun asBoolean() = asInt() != 0
 }
 
 class APLLong(val value: Long) : APLNumber() {
@@ -30,16 +29,16 @@ class APLLong(val value: Long) : APLNumber() {
     override fun asLong() = value
     override fun asComplex() = Complex(value.toDouble())
     override fun isComplex() = false
-    override fun formatted(style: FormatStyle) =
+    override suspend fun formatted(style: FormatStyle) =
         when (style) {
             FormatStyle.PLAIN -> value.toString()
             FormatStyle.READABLE -> value.toString()
             FormatStyle.PRETTY -> value.toString()
         }
 
-    override fun compareEquals(reference: APLValue) = reference is APLLong && value == reference.value
+    override suspend fun compareEquals(reference: APLValue) = reference is APLLong && value == reference.value
 
-    override fun compare(reference: APLValue, pos: Position?): Int {
+    override suspend fun compare(reference: APLValue, pos: Position?): Int {
         return when (reference) {
             is APLLong -> value.compareTo(reference.value)
             is APLDouble -> value.compareTo(reference.value)
@@ -48,11 +47,11 @@ class APLLong(val value: Long) : APLNumber() {
         }
     }
 
-    override fun toString() = "APLLong(${formatted(FormatStyle.PRETTY)})"
+    override fun toString() = "APLLong(${value})"
 
-    override fun makeKey() = value
+    override suspend fun makeKey() = value
 
-    override fun asBoolean() = value != 0L
+    override suspend fun asBoolean() = value != 0L
 }
 
 private fun throwComplexComparisonException(pos: Position?): Nothing {
@@ -66,7 +65,7 @@ class APLDouble(val value: Double) : APLNumber() {
     override fun asComplex() = Complex(value)
     override fun isComplex() = false
 
-    override fun formatted(style: FormatStyle) =
+    override suspend fun formatted(style: FormatStyle) =
         when (style) {
             FormatStyle.PLAIN -> value.toString()
             FormatStyle.PRETTY -> {
@@ -83,9 +82,9 @@ class APLDouble(val value: Double) : APLNumber() {
             FormatStyle.READABLE -> if (value < 0) "¯" + (-value).toString() else value.toString()
         }
 
-    override fun compareEquals(reference: APLValue) = reference is APLDouble && value == reference.value
+    override suspend fun compareEquals(reference: APLValue) = reference is APLDouble && value == reference.value
 
-    override fun compare(reference: APLValue, pos: Position?): Int {
+    override suspend fun compare(reference: APLValue, pos: Position?): Int {
         return when (reference) {
             is APLLong -> value.compareTo(reference.value)
             is APLDouble -> value.compareTo(reference.value)
@@ -94,11 +93,11 @@ class APLDouble(val value: Double) : APLNumber() {
         }
     }
 
-    override fun toString() = "APLDouble(${formatted(FormatStyle.PRETTY)})"
+    override fun toString() = "APLDouble(${value})"
 
-    override fun makeKey() = value
+    override suspend fun makeKey() = value
 
-    override fun asBoolean() = value != 0.0
+    override suspend fun asBoolean() = value != 0.0
 }
 
 class NumberComplexException(value: Complex, pos: Position? = null) : IncompatibleTypeException("Number is complex: ${value}", pos)
@@ -120,12 +119,12 @@ class APLComplex(val value: Complex) : APLNumber() {
         return value.real.toLong()
     }
 
-    override fun compareEquals(reference: APLValue) = reference is APLComplex && value == reference.value
+    override suspend fun compareEquals(reference: APLValue) = reference is APLComplex && value == reference.value
 
     override fun asComplex() = value
     override fun isComplex() = value.imaginary != 0.0
 
-    override fun formatted(style: FormatStyle) =
+    override suspend fun formatted(style: FormatStyle) =
         when (style) {
             FormatStyle.PLAIN -> formatToAPL()
             FormatStyle.PRETTY -> formatToAPL()
@@ -134,9 +133,9 @@ class APLComplex(val value: Complex) : APLNumber() {
 
     private fun formatToAPL() = "${value.real}J${value.imaginary}"
 
-    override fun makeKey() = value
+    override suspend fun makeKey() = value
 
-    override fun asBoolean() = value != Complex.ZERO
+    override suspend fun asBoolean() = value != Complex.ZERO
 }
 
 val APLLONG_0 = APLLong(0)

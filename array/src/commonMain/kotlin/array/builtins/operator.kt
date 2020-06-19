@@ -25,7 +25,7 @@ class PowerAPLOperator : APLOperatorTwoArg {
             val fn1 = fn1Descriptor.make(pos)
             val fn2 = fn2Descriptor.make(pos)
             return object : APLFunction(pos) {
-                override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+                override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
                     var curr = a
                     while (true) {
                         val next = fn1.eval1Arg(context, curr, null).collapse()

@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 
 class LabelsTest : APLTest() {
     @Test
-    fun simpleLabelsTest() {
+    fun simpleLabelsTest() = runBlockingCompat<Unit> {
         parseAPLExpression("\"foo\" \"bar\" labels[1] 2 2 ⍴ 1 2 3 4").let { result ->
             assertDimension(dimensionsOfSize(2, 2), result)
             assertArrayContent(arrayOf(1, 2, 3, 4), result)
@@ -22,7 +22,7 @@ class LabelsTest : APLTest() {
     }
 
     @Test
-    fun preserveLabelsForTranspose() {
+    fun preserveLabelsForTranspose() = runBlockingCompat<Unit> {
         parseAPLExpression("⍉ \"a\" \"b\" labels[0] \"q\" \"w\" \"e\" labels[1] 2 3 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(3, 2), result)
             assertArrayContent(arrayOf(0, 3, 1, 4, 2, 5), result)
@@ -36,7 +36,7 @@ class LabelsTest : APLTest() {
     }
 
     @Test
-    fun rotateLabels() {
+    fun rotateLabels() = runBlockingCompat<Unit> {
         parseAPLExpression("⌽ \"a\" \"b\" \"c\" \"d\" \"e\" \"f\" labels[0] ⍳6").let { result ->
             assertDimension(dimensionsOfSize(6), result)
             assertArrayContent(arrayOf(5, 4, 3, 2, 1, 0), result)
@@ -49,7 +49,7 @@ class LabelsTest : APLTest() {
     }
 
     @Test
-    fun rotate2D() {
+    fun rotate2D() = runBlockingCompat<Unit> {
         parseAPLExpression("⌽ \"aa\" \"bb\" \"cc\" labels[1] \"a\" \"b\" \"c\" labels[0] 3 3 ⍴ ⍳9").let { result ->
             assertDimension(dimensionsOfSize(3, 3), result)
             assertArrayContent(arrayOf(2, 1, 0, 5, 4, 3, 8, 7, 6), result)
@@ -63,7 +63,7 @@ class LabelsTest : APLTest() {
     }
 
     @Test
-    fun concatenationTwoLabels() {
+    fun concatenationTwoLabels() = runBlockingCompat<Unit> {
         parseAPLExpression("(\"a\" \"b\" labels[1] 2 2 ⍴ ⍳4) ,[1] (\"aa\" \"bb\" labels[1] 2 2 ⍴ 100+⍳4)").let { result ->
             assertDimension(dimensionsOfSize(2, 4), result)
             assertArrayContent(arrayOf(0, 1, 100, 101, 2, 3, 102, 103), result)
@@ -80,7 +80,7 @@ class LabelsTest : APLTest() {
      * Labels on the non-concatenated axis should be dropped
      */
     @Test
-    fun concatenationConflictingAxisNames() {
+    fun concatenationConflictingAxisNames() = runBlockingCompat<Unit> {
         parseAPLExpression("(\"a\" \"b\" labels[1] 2 2 ⍴ ⍳4) ,[0] (\"aa\" \"bb\" labels[1] 2 2 ⍴ 100+⍳4)").let { result ->
             assertDimension(dimensionsOfSize(4, 2), result)
             assertArrayContent(arrayOf(0, 1, 2, 3, 100, 101, 102, 103), result)
@@ -90,7 +90,7 @@ class LabelsTest : APLTest() {
     }
 
     @Test
-    fun concatenation1D() {
+    fun concatenation1D() = runBlockingCompat<Unit> {
         parseAPLExpression("(\"a\" \"b\" labels[0] 1 2) , (\"aa\" \"bb\" labels[0] 100 101)").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(1, 2, 100, 101), result)

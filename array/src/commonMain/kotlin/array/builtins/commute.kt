@@ -15,11 +15,11 @@ class CommuteOp : APLOperatorOneArg {
             return object : APLFunction(pos) {
                 private val fn = fnDescriptor.make(pos)
 
-                override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+                override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
                     return fn.eval2Arg(context, a, a, axis)
                 }
 
-                override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+                override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
                     return fn.eval2Arg(context, b, a, axis)
                 }
             }

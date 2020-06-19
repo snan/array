@@ -6,31 +6,31 @@ import kotlin.test.assertTrue
 
 class ReduceTest : APLTest() {
     @Test
-    fun reduceIotaTest() {
+    fun reduceIotaTest() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+/⍳1000")
         assertSimpleNumber(499500, result)
     }
 
     @Test
-    fun reduceTestWithFunction() {
+    fun reduceTestWithFunction() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+/⍳1+2")
         assertSimpleNumber(3, result)
     }
 
     @Test
-    fun reduceWithSingleValue() {
+    fun reduceWithSingleValue() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+/,4")
         assertSimpleNumber(4, result)
     }
 
     @Test
-    fun reduceWithScalar() {
+    fun reduceWithScalar() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+/4")
         assertSimpleNumber(4, result)
     }
 
     @Test
-    fun reduceWithEmptyArg() {
+    fun reduceWithEmptyArg() = runBlockingCompat<Unit> {
         reduceTestWithFunctionName("+", 0)
         reduceTestWithFunctionName("-", 0)
         reduceTestWithFunctionName("×", 1)
@@ -45,7 +45,7 @@ class ReduceTest : APLTest() {
     }
 
     @Test
-    fun reduceWithNonScalarCells() {
+    fun reduceWithNonScalarCells() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("+/ (1 2 3 4) (6 7 8 9)")
         assertDimension(emptyDimensions(), result)
 
@@ -55,13 +55,13 @@ class ReduceTest : APLTest() {
     }
 
     @Test
-    fun reduceCustomFn() {
+    fun reduceCustomFn() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("{⍺+⍵+10}/⍳6")
         assertSimpleNumber(65, result)
     }
 
     @Test
-    fun reduceAlongAxis() {
+    fun reduceAlongAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("e←3 4 ⍴ 1 2 3 4 5 6 7 8 9 10 11 12 ◊ +/[0] e").let { result ->
             assertDimension(dimensionsOfSize(4), result)
             assertArrayContent(arrayOf(15, 18, 21, 24), result)
@@ -69,14 +69,14 @@ class ReduceTest : APLTest() {
     }
 
     @Test
-    fun invalidAxisTest() {
+    fun invalidAxisTest() = runBlockingCompat<Unit> {
         assertFailsWith<IllegalAxisException> {
             parseAPLExpression("+/[2] 2 3 ⍴ ⍳6")
         }
     }
 
     @Test
-    fun multiDimensionalReduce() {
+    fun multiDimensionalReduce() = runBlockingCompat<Unit> {
         parseAPLExpression("+/[0] 3 3 4 5 6 ⍴ ⍳1000").let { result ->
             assertDimension(dimensionsOfSize(3, 4, 5, 6), result)
             assertArrayContent(
@@ -145,7 +145,7 @@ class ReduceTest : APLTest() {
     }
 
     @Test
-    fun reduceFirstAxis() {
+    fun reduceFirstAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("+⌿ 2 3 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(3), result)
             assertArrayContent(arrayOf(3, 5, 7), result)
@@ -153,14 +153,14 @@ class ReduceTest : APLTest() {
     }
 
     @Test
-    fun reduceFirstAxisWithGivenAxis() {
+    fun reduceFirstAxisWithGivenAxis() = runBlockingCompat<Unit> {
         parseAPLExpression("+⌿[1] 2 3 ⍴ ⍳100").let { result ->
             assertDimension(dimensionsOfSize(2), result)
             assertArrayContent(arrayOf(3, 12), result)
         }
     }
 
-    private fun reduceTestWithFunctionName(aplFn: String, correctRes: Int) {
+    private suspend fun reduceTestWithFunctionName(aplFn: String, correctRes: Int) {
         val result = parseAPLExpression("${aplFn}/0⍴4")
         assertTrue(result.dimensions.compareEquals(emptyDimensions()))
         assertSimpleNumber(correctRes.toLong(), result)

@@ -5,7 +5,7 @@ import array.complex.Complex
 
 class EqualsAPLFunction : APLFunctionDescriptor {
     class EqualsAPLFunctionImpl(pos: Position) : MathCombineAPLFunction(pos) {
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return if ((a is APLChar && b !is APLChar) || a !is APLChar && b is APLChar) {
                 makeBoolean(false)
             } else {
@@ -28,7 +28,7 @@ class EqualsAPLFunction : APLFunctionDescriptor {
 
 class NotEqualsAPLFunction : APLFunctionDescriptor {
     class NotEqualsAPLFunctionImpl(pos: Position) : MathCombineAPLFunction(pos) {
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return if ((a is APLChar && b !is APLChar) || a !is APLChar && b is APLChar) {
                 makeBoolean(true)
             } else {
@@ -51,7 +51,7 @@ class NotEqualsAPLFunction : APLFunctionDescriptor {
 
 class LessThanAPLFunction : APLFunctionDescriptor {
     class LessThanAPLFunctionImpl(pos: Position) : MathCombineAPLFunction(pos) {
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return numericRelationOperation(
                 pos,
                 a,
@@ -70,7 +70,7 @@ class LessThanAPLFunction : APLFunctionDescriptor {
 
 class GreaterThanAPLFunction : APLFunctionDescriptor {
     class GreaterThanAPLFunctionImpl(pos: Position) : MathCombineAPLFunction(pos) {
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return numericRelationOperation(
                 pos,
                 a,
@@ -89,7 +89,7 @@ class GreaterThanAPLFunction : APLFunctionDescriptor {
 
 class LessThanEqualAPLFunction : APLFunctionDescriptor {
     class LessThanEqualAPLFunctionImpl(pos: Position) : MathCombineAPLFunction(pos) {
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return numericRelationOperation(
                 pos,
                 a,
@@ -108,7 +108,7 @@ class LessThanEqualAPLFunction : APLFunctionDescriptor {
 
 class GreaterThanEqualAPLFunction : APLFunctionDescriptor {
     class GreaterThanEqualAPLFunctionImpl(pos: Position) : MathCombineAPLFunction(pos) {
-        override fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
+        override suspend fun combine2Arg(a: APLSingleValue, b: APLSingleValue): APLValue {
             return numericRelationOperation(
                 pos,
                 a,

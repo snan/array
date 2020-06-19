@@ -369,7 +369,7 @@ class APLParser(val tokeniser: TokenGenerator) {
     }
 
     class EvalLambdaFnx(val fn: APLFunction, pos: Position) : Instruction(pos) {
-        override fun evalWithContext(context: RuntimeContext): APLValue {
+        override suspend fun evalWithContext(context: RuntimeContext): APLValue {
             return LambdaValue(fn, context)
         }
     }

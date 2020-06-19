@@ -5,11 +5,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 open class APLTest {
-    fun parseAPLExpression(expr: String, withStandardLib: Boolean = false): APLValue {
+    suspend fun parseAPLExpression(expr: String, withStandardLib: Boolean = false): APLValue {
         return parseAPLExpression2(expr, withStandardLib).first
     }
 
-    fun parseAPLExpression2(expr: String, withStandardLib: Boolean = false): Pair<APLValue, Engine> {
+    suspend fun parseAPLExpression2(expr: String, withStandardLib: Boolean = false): Pair<APLValue, Engine> {
         val engine = Engine()
         engine.addLibrarySearchPath("standard-lib")
         if (withStandardLib) {
@@ -19,7 +19,7 @@ open class APLTest {
         return Pair(result.collapse(), engine)
     }
 
-    fun parseAPLExpressionWithOutput(expr: String, withStandardLib: Boolean = false): Pair<APLValue, String> {
+    suspend fun parseAPLExpressionWithOutput(expr: String, withStandardLib: Boolean = false): Pair<APLValue, String> {
         val engine = Engine()
         engine.addLibrarySearchPath("standard-lib")
         if (withStandardLib) {
@@ -31,7 +31,7 @@ open class APLTest {
         return Pair(result, output.buf.toString())
     }
 
-    fun assertArrayContent(expectedValue: Array<Int>, value: APLValue) {
+    suspend fun assertArrayContent(expectedValue: Array<Int>, value: APLValue) {
         assertEquals(expectedValue.size, value.size, "Array dimensions mismatch")
         for (i in expectedValue.indices) {
             assertSimpleNumber(expectedValue[i].toLong(), value.valueAt(i), "index: ${i}")
@@ -43,7 +43,7 @@ open class APLTest {
         assertTrue(result.dimensions.compareEquals(expectDimensions), "expected dimension: $expectDimensions, actual $dimensions")
     }
 
-    fun assertPairs(v: APLValue, vararg values: Array<Int>) {
+    suspend fun assertPairs(v: APLValue, vararg values: Array<Int>) {
         for (i in values.indices) {
             val cell = v.valueAt(i)
             val expectedValue = values[i]
@@ -53,7 +53,7 @@ open class APLTest {
         }
     }
 
-    fun assertSimpleNumber(expected: Long, value: APLValue, expr: String? = null) {
+    suspend fun assertSimpleNumber(expected: Long, value: APLValue, expr: String? = null) {
         val v = value.unwrapDeferredValue()
         val prefix = "Expected value: ${expected}, actual: ${value}"
         val exprMessage = if (expr == null) prefix else "${prefix}, expr: ${expr}"
@@ -62,7 +62,7 @@ open class APLTest {
         assertEquals(expected, value.ensureNumber().asLong(), exprMessage)
     }
 
-    fun assertDoubleWithRange(expected: Pair<Double, Double>, value: APLValue) {
+    suspend fun assertDoubleWithRange(expected: Pair<Double, Double>, value: APLValue) {
         assertTrue(value.isScalar())
         val v = value.unwrapDeferredValue()
         assertTrue(v is APLNumber)
@@ -71,14 +71,14 @@ open class APLTest {
         assertTrue(expected.second >= num)
     }
 
-    fun assertSimpleDouble(expected: Double, value: APLValue) {
+    suspend fun assertSimpleDouble(expected: Double, value: APLValue) {
         assertTrue(value.isScalar())
         val v = value.unwrapDeferredValue()
         assertTrue(v is APLNumber)
         assertEquals(expected, v.ensureNumber().asDouble())
     }
 
-    fun assertComplexWithRange(real: Pair<Double, Double>, imaginary: Pair<Double, Double>, result: APLValue) {
+    suspend fun assertComplexWithRange(real: Pair<Double, Double>, imaginary: Pair<Double, Double>, result: APLValue) {
         assertTrue(result.isScalar())
         val complex = result.ensureNumber().asComplex()
         val message = "expected: ${real} ${imaginary}, actual: ${complex}"
@@ -86,14 +86,14 @@ open class APLTest {
         assertTrue(imaginary.first <= complex.imaginary && imaginary.second >= complex.imaginary, message)
     }
 
-    fun assertSimpleComplex(expected: Complex, result: APLValue) {
+    suspend fun assertSimpleComplex(expected: Complex, result: APLValue) {
         assertTrue(result.isScalar())
         val v = result.unwrapDeferredValue()
         assertTrue(v is APLNumber)
         assertEquals(expected, v.ensureNumber().asComplex())
     }
 
-    fun assertString(expected: String, value: APLValue) {
+    suspend fun assertString(expected: String, value: APLValue) {
         assertEquals(1, value.dimensions.size)
         assertEquals(expected, arrayAsStringValue(value))
     }
@@ -103,7 +103,7 @@ open class APLTest {
         assertEquals(0, value.dimensions[0])
     }
 
-    fun assertAPLValue(expected: Any, result: APLValue) {
+    suspend fun assertAPLValue(expected: Any, result: APLValue) {
         when (expected) {
             is Int -> assertSimpleNumber(expected.toLong(), result)
             is Long -> assertSimpleNumber(expected, result)

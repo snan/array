@@ -7,7 +7,7 @@ import kotlin.test.assertFailsWith
 
 class CsvTest : APLTest() {
     @Test
-    fun simpleCsv() {
+    fun simpleCsv() = runBlockingCompat<Unit> {
         val content = """
             |0,1,2,3
             |10,11,12,13
@@ -22,7 +22,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun stringCsv() {
+    fun stringCsv() = runBlockingCompat<Unit> {
         val content = """
             |0,1
             |"test",a b
@@ -40,7 +40,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun stringEscape() {
+    fun stringEscape() = runBlockingCompat<Unit> {
         val content = """
             |"\"","\"foo","a\""
             |"test\"middle","a\"b\"cd"
@@ -52,7 +52,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun csvWithWhitespace() {
+    fun csvWithWhitespace() = runBlockingCompat<Unit> {
         val content = """
             |  foo ,   a  bc   ,2
             |" a   xy  " ,  10 , "  " 
@@ -80,7 +80,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun csvWithNull() {
+    fun csvWithNull() = runBlockingCompat<Unit> {
         val content = """
             |1,2
             |3,4,5,6,7,8
@@ -120,7 +120,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun emptyFieldTest() {
+    fun emptyFieldTest() = runBlockingCompat<Unit> {
         val content = """
             |1,,2
             |,  ,3
@@ -148,7 +148,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun incompleteString() {
+    fun incompleteString() = runBlockingCompat<Unit> {
         val content = """
             |a,"foo
         """.trimMargin()
@@ -159,7 +159,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun floatCells() {
+    fun floatCells() = runBlockingCompat<Unit> {
         val content = """
             |1.2,.3,4.
             |.,1e2,1.e
@@ -176,7 +176,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun emptyInput() {
+    fun emptyInput() = runBlockingCompat<Unit> {
         val content = ""
         val input = StringCharacterProvider(content)
         val result = readCsv(input)
@@ -184,7 +184,7 @@ class CsvTest : APLTest() {
     }
 
     @Test
-    fun emptyLines() {
+    fun emptyLines() = runBlockingCompat<Unit> {
         val content = """
             |1,2,3,4
             |

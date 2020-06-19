@@ -4,7 +4,7 @@ import array.*
 
 class TypeofFunction : APLFunctionDescriptor {
     class TypeofFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             return APLSymbol(context.engine.internSymbol(v.aplValueType.typeName))
         }
@@ -15,7 +15,7 @@ class TypeofFunction : APLFunctionDescriptor {
 
 class IsLocallyBoundFunction : APLFunctionDescriptor {
     class IsLocallyBoundFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val v = a.unwrapDeferredValue()
             return makeBoolean(context.isLocallyBound(v.ensureSymbol(pos).value))
         }
@@ -26,7 +26,7 @@ class IsLocallyBoundFunction : APLFunctionDescriptor {
 
 class CompFunction : APLFunctionDescriptor {
     class CompFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue, axis: APLValue?): APLValue {
             return a.collapse()
         }
     }
@@ -38,7 +38,7 @@ class CompFunction : APLFunctionDescriptor {
 
 class SleepFunction : APLFunctionDescriptor {
     class SleepFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
+        override suspend fun eval1Arg(context: RuntimeContext, a: APLValue): APLValue {
             val sleepTimeSeconds = a.ensureNumber(pos).asDouble()
             sleepMillis((sleepTimeSeconds * 1000).toLong())
             return sleepTimeSeconds.makeAPLNumber()
@@ -52,7 +52,7 @@ class TagCatch(val tag: APLValue, val data: APLValue) : RuntimeException()
 
 class ThrowFunction : APLFunctionDescriptor {
     class ThrowFunctionImpl(pos: Position) : NoAxisAPLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue): APLValue {
             throw TagCatch(b, a)
         }
     }
@@ -62,7 +62,7 @@ class ThrowFunction : APLFunctionDescriptor {
 
 class LabelsFunction : APLFunctionDescriptor {
     class LabelsFunctionImpl(pos: Position) : APLFunction(pos) {
-        override fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
+        override suspend fun eval2Arg(context: RuntimeContext, a: APLValue, b: APLValue, axis: APLValue?): APLValue {
             if (!b.isScalar()) {
                 val bDimensions = b.dimensions
                 val axisInt = if (axis == null) bDimensions.lastAxis(pos) else axis.ensureNumber(pos).asInt()

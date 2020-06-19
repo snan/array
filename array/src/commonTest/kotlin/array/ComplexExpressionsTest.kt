@@ -7,13 +7,13 @@ import kotlin.test.assertFailsWith
 
 class ComplexExpressionsTest : APLTest() {
     @Test
-    fun parenExpressionWithScalarValue() {
+    fun parenExpressionWithScalarValue() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(1+2)")
         assertSimpleNumber(3, result)
     }
 
     @Test
-    fun nestedArrayNoExpression() {
+    fun nestedArrayNoExpression() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(1 2) (3 4)")
         assertDimension(dimensionsOfSize(2), result)
         assertArrayContent(arrayOf(1, 2), result.valueAt(0))
@@ -21,7 +21,7 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun nestedArrayScalarValue() {
+    fun nestedArrayScalarValue() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(1) (2 3)")
         assertDimension(dimensionsOfSize(2), result)
         assertSimpleNumber(1, result.valueAt(0))
@@ -29,7 +29,7 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun nestedArrayWithScalarValueFromFn() {
+    fun nestedArrayWithScalarValueFromFn() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("∇ foo (x) {1+x} ◊ (foo 1) (foo 6)")
         assertDimension(dimensionsOfSize(2), result)
         assertSimpleNumber(2, result.valueAt(0))
@@ -37,7 +37,7 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun nestedArrayWithScalarValueFromExpr() {
+    fun nestedArrayWithScalarValueFromExpr() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(1+2) (3+4) (1+5)")
         assertDimension(dimensionsOfSize(3), result)
         assertSimpleNumber(3, result.valueAt(0))
@@ -46,7 +46,7 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun doubleNestedArrays() {
+    fun doubleNestedArrays() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("(⍳3) (10+⍳10)")
         assertDimension(dimensionsOfSize(2), result)
         result.valueAt(0).let { value ->
@@ -60,75 +60,75 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun closeParenMissing() {
+    fun closeParenMissing() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("(1+2+3")
         }
     }
 
     @Test
-    fun openParenMissing() {
+    fun openParenMissing() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("1+2+3)")
         }
     }
 
     @Test
-    fun closeBracketMissing() {
+    fun closeBracketMissing() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("1 2 4 5 6 7 +/[")
         }
     }
 
     @Test
-    fun openBracketMissing() {
+    fun openBracketMissing() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("1 2 3 4 5 6 7 +/2] 1")
         }
     }
 
     @Test
-    fun closeBraceMissing() {
+    fun closeBraceMissing() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("{1+2+3")
         }
     }
 
     @Test
-    fun openBraceMissing() {
+    fun openBraceMissing() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("1+2+3}")
         }
     }
 
     @Test
-    fun incorrectlyNestedParens1() {
+    fun incorrectlyNestedParens1() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("(1+2 {3+4)}")
         }
     }
 
     @Test
-    fun incorrectlyNestedParens2() {
+    fun incorrectlyNestedParens2() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             parseAPLExpression("{1+2 (3+4} 5 6 7)")
         }
     }
 
     @Test
-    fun nestedFunctions() {
+    fun nestedFunctions() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("{⍵+{1+⍵} 4} 5")
         assertSimpleNumber(10, result)
     }
 
     @Test
-    fun nestedTwoArgFunctions() {
+    fun nestedTwoArgFunctions() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("200 {⍺+⍵+10 {1+⍺+⍵} 4} 5 ")
         assertSimpleNumber(220, result)
     }
 
     @Test
-    fun multilineExpression() {
+    fun multilineExpression() = runBlockingCompat<Unit> {
         parseAPLExpressionWithOutput(
             """
             |print 3
@@ -140,7 +140,7 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun multilineExpressionWithBlankLines() {
+    fun multilineExpressionWithBlankLines() = runBlockingCompat<Unit> {
         parseAPLExpressionWithOutput(
             """
             |print 3
@@ -154,7 +154,7 @@ class ComplexExpressionsTest : APLTest() {
     }
 
     @Test
-    fun expressionEvaluationOrder() {
+    fun expressionEvaluationOrder() = runBlockingCompat<Unit> {
         parseAPLExpression("a + 1 + a←2").let { result ->
             assertSimpleNumber(5, result)
         }
@@ -163,7 +163,7 @@ class ComplexExpressionsTest : APLTest() {
     // Test ignored since it's not clear how the parser is supposed to handle this case at the moment
     @Test
     @Ignore
-    fun multilineExpressionsShouldFail() {
+    fun multilineExpressionsShouldFail() = runBlockingCompat<Unit> {
         assertFailsWith<ParseException> {
             val v = parseAPLExpression("1 2 (\n4\n)").collapse()
             println("v = ${v}")

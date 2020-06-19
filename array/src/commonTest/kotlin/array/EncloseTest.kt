@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 
 class EncloseTest : APLTest() {
     @Test
-    fun encloseArrayTest() {
+    fun encloseArrayTest() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⊂1 2 3 4")
         assertTrue(result.isScalar())
         assertDimension(emptyDimensions(), result)
@@ -17,7 +17,7 @@ class EncloseTest : APLTest() {
     }
 
     @Test
-    fun encloseNumberTest() {
+    fun encloseNumberTest() = runBlockingCompat<Unit> {
         val result = parseAPLExpression("⊂6")
         assertTrue(result.isScalar())
         assertDimension(emptyDimensions(), result)

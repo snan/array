@@ -1,7 +1,11 @@
 package array
 
-import kotlinx.cinterop.*
-import platform.posix.*
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.coroutines.runBlocking
+import platform.posix.nanosleep
+import platform.posix.timespec
 import kotlin.native.concurrent.FreezableAtomicReference
 import kotlin.native.concurrent.freeze
 import kotlin.native.concurrent.isFrozen
@@ -41,59 +45,8 @@ actual fun <T> makeAtomicRefArray(size: Int): MPAtomicRefArray<T> {
     return LinuxMPAtomicRefArray(size)
 }
 
-private class ThreadArgs(val fn: () -> Unit)
-
-private class LinuxThreadWrapper(val tid: pthread_t) : ThreadWrapper {
-    override fun join() {
-        memScoped {
-            val res = alloc<CPointerVar<*>>()
-            pthread_join(tid, res.ptr)
-        }
+actual fun <T> runBlockingCompat(fn: suspend () -> T): T {
+    return runBlocking {
+        fn()
     }
-}
-
-private fun threadHandler(arg: CPointer<*>): CPointer<*>? {
-    val ref = arg.asStableRef<ThreadArgs>()
-    val threadArgs = ref.get()
-    ref.dispose()
-    threadArgs.fn()
-    return null
-}
-
-@OptIn(ExperimentalUnsignedTypes::class)
-actual fun runInThread(name: String, fn: () -> Unit): ThreadWrapper {
-    memScoped {
-        val args = ThreadArgs(fn)
-        args.freeze()
-        val ref = StableRef.create(args)
-        val tid = alloc<pthread_tVar>()
-        val result = pthread_create(tid.ptr, null, staticCFunction(::threadHandler).reinterpret(), ref.asCPointer())
-        if (result != 0) {
-            throw RuntimeException("Error creating thread: ${strerror(errno)}")
-        }
-        return LinuxThreadWrapper(tid.value)
-    }
-}
-
-private class LinuxLock : MPLock {
-    private val lock: pthread_mutex_t
-
-    init {
-        val v = nativeHeap.alloc<pthread_mutex_t>()
-        pthread_mutex_init(v.ptr, null)
-        lock = v
-    }
-
-    override fun <T> withLockHeld(fn: () -> T): T {
-        pthread_mutex_lock(lock.ptr)
-        try {
-            return fn()
-        } finally {
-            pthread_mutex_unlock(lock.ptr)
-        }
-    }
-}
-
-actual fun makeLock(): MPLock {
-    return LinuxLock()
 }
