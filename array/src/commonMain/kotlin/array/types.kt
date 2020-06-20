@@ -206,6 +206,8 @@ abstract class APLSingleValue : APLValue {
     override suspend fun arrayify() = APLArrayImpl.make(dimensionsOfSize(1)) { this }
 }
 
+var minParallelSize = 16
+
 abstract class APLArray : APLValue {
     override val aplValueType: APLValueType get() = APLValueType.ARRAY
 
@@ -220,16 +222,45 @@ abstract class APLArray : APLValue {
 
     private suspend fun collapseParallel(v: APLValue): APLValue {
         val length = v.dimensions.contentSize()
-        val deferredValues = Array(length) { i ->
-            val deferred = CompletableDeferred<APLValue>()
+        if (length < minParallelSize) {
+            return APLArrayImpl.make(v.dimensions) { i -> v.valueAt(i).collapseInt() }
+        }
+        val numBlocks = minParallelSize
+        val baseBlockSize = length / numBlocks
+        val excess = length - (baseBlockSize * numBlocks)
+        assertx(excess in (0 until numBlocks))
+
+        var currBlockIndex = 0
+        var start = 0
+        val deferredValues = Array(numBlocks) {
+            val currBlockSize = baseBlockSize + (if (currBlockIndex < excess) 1 else 0)
+            val deferred = CompletableDeferred<Array<APLValue>>()
+            val copyStart = start
             GlobalScope.launch {
-                val result = v.valueAt(i)
-                deferred.complete(result)
+                val resultList = Array(currBlockSize) { i ->
+                    v.valueAt(i + copyStart).collapseInt()
+                }
+                deferred.complete(resultList)
             }.start()
+            start += currBlockSize
+            currBlockIndex++
             deferred
         }
-        return APLArrayImpl.make(v.dimensions) { i ->
-            deferredValues[i].await()
+        assertx(start == length)
+
+        var blockIndex = 0
+        var posInBlock = 0
+        var currArray: Array<APLValue>? = null
+        return APLArrayImpl.make(v.dimensions) {
+            if (posInBlock == 0) {
+                currArray = deferredValues[blockIndex].await()
+            }
+            val result = currArray!![posInBlock++]
+            if (posInBlock >= currArray!!.size) {
+                blockIndex++
+                posInBlock = 0
+            }
+            result
         }
     }
 
