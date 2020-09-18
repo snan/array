@@ -4,11 +4,18 @@ import array.*
 import kotlin.math.max
 import kotlin.math.min
 import javafx.application.Platform
+import javafx.beans.property.DoubleProperty
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.event.EventType
+import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.WritableImage
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.GridPane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.stage.Stage
 import javafx.stage.WindowEvent
@@ -92,19 +99,27 @@ class GraphicWindow(width: Int, height: Int) {
     private inner class Content(width: Int, height: Int) {
         val stage = Stage()
         val canvas: Canvas
-        val image: WritableImage
 
         init {
-            image = WritableImage(width, height)
             canvas = Canvas(width.toDouble(), height.toDouble())
-            val border = BorderPane().apply {
-                center = canvas
-            }
+            val resizeListener = ChangeListener<Number> { observable, oldValue, newValue -> println("resizing") }
+            canvas.widthProperty().addListener(resizeListener)
+            canvas.heightProperty().addListener { _, old, new -> println("canvas change: $old -> $new") }
+            canvas.maxWidth(Double.MAX_VALUE)
+            canvas.maxHeight(Double.MAX_VALUE)
+            VBox.setVgrow(canvas, Priority.ALWAYS)
+            canvas.style = "-fx-background-color: red"
+
+            val border = VBox(canvas)
+            border.widthProperty().addListener { _, old, new -> println("border change: $old -> $new") }
+            border.style = "-fx-background-color: green"
             stage.scene = Scene(border, width.toDouble(), height.toDouble())
+            stage.widthProperty().addListener { _, old, new -> println("stage change: $old -> $new") }
             stage.show()
         }
 
         fun repaintCanvas(width: Int, height: Int, array: DoubleArray) {
+            val image = WritableImage(canvas.width.toInt(), canvas.height.toInt())
             val imageWidth = image.width
             val imageHeight = image.height
             val xStride = width.toDouble() / imageWidth
