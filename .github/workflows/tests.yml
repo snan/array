@@ -28,3 +28,5 @@ jobs:
       run: ./gradlew array:allTests
     - name: tests for gui
       run: ./gradlew gui:test
+    - name: tests for text-client
+      run: ./gradlew text-client:test
