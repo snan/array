@@ -22,7 +22,7 @@ To start the client, simply run:
 
 ```
 ./gradlew gui:run
-```          
+```
 
 ## Running the native version
 
@@ -30,7 +30,7 @@ Build the entire project:
 
 ```
 ./gradlew build
-``` 
+```
 
 Once the build is complete, the binaries can be found in the following directory: `array/build/bin/linux`.
 
@@ -45,4 +45,3 @@ is missing from the Javascript version. For example, the standard library cannot
 ### Online demo
 
 If you still want to try the web application you can try it here: http://kapdemo.dhsdevelopments.com/
-

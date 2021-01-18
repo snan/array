@@ -113,9 +113,13 @@ class GraphicWindow(width: Int, height: Int) {
     }
 }
 
-fun initGraphicCommands(client: Client) {
-    val engine = client.engine
-    val guiNamespace = engine.makeNamespace("gui")
-    engine.registerFunction(engine.internSymbol("makeGraphic", guiNamespace), MakeGraphicFunction())
-    engine.registerFunction(engine.internSymbol("drawArray", guiNamespace), DrawGraphicFunction())
+class GraphicAPLModule : KapModule {
+    override val name
+        get() = "gui"
+
+    override fun init(engine: Engine) {
+        val guiNamespace = engine.makeNamespace("gui")
+        engine.registerFunction(engine.internSymbol("makeGraphic", guiNamespace), MakeGraphicFunction())
+        engine.registerFunction(engine.internSymbol("drawArray", guiNamespace), DrawGraphicFunction())
+    }
 }

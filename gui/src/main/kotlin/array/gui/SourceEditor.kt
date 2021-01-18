@@ -35,8 +35,8 @@ import java.util.function.Function
 class SourceEditor(val client: Client) {
     private val stage = Stage()
     private var styledArea: SourceEditorStyledArea
-    private var loaded: File? = null
     private val messageArea = TextField()
+    var loaded: File? = null
 
     init {
         val vbox = VBox()

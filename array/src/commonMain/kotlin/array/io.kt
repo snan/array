@@ -214,6 +214,8 @@ class PathUtils {
     }
 }
 
+expect fun normaliseFileName(fileName: String): String
+
 enum class FileNameType {
     FILE,
     DIRECTORY,

@@ -117,12 +117,14 @@ class StringSourceLocation(private val sourceText: String) : SourceLocation {
     override fun open() = StringCharacterProvider(sourceText)
 }
 
-class FileSourceLocation(private val file: String) : SourceLocation {
+class FileSourceLocation(private val fileName: String) : SourceLocation {
     override fun sourceText(): String {
         TODO("not implemented")
     }
 
-    override fun open() = openCharFile(file)
+    override fun open() = openCharFile(fileName)
+
+    val normalisedFileName = normaliseFileName(fileName)
 }
 
 class Position(val source: SourceLocation, val line: Int, val col: Int)

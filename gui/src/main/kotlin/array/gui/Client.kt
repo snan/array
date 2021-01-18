@@ -29,7 +29,7 @@ class Client(val application: ClientApplication, val stage: Stage) {
     init {
         engine = Engine()
         engine.addLibrarySearchPath("../array/standard-lib")
-        initCustomFunctions()
+        engine.addModule(GraphicAPLModule())
         engine.parseAndEval(StringSourceLocation("use(\"standard-lib.kap\")"), false)
 
         engine.standardOutput = SendToMainCharacterOutput()
@@ -163,20 +163,32 @@ class Client(val application: ClientApplication, val stage: Stage) {
 
     fun highlightSourceLocation(pos: Position, message: String? = null) {
         val sourceLocation = pos.source
-        if (sourceLocation is SourceEditor.EditorSourceLocation) {
-            sourceLocation.editor?.let { editor ->
-                sourceEditors.forEach { e ->
-                    if (e === editor) {
-                        editor.highlightError(pos, message)
+        val editorList = editorsForLocation(sourceLocation)
+        if (editorList.isNotEmpty()) {
+            editorList.forEach { editor ->
+                editor.highlightError(pos, message)
+            }
+        }
+    }
+
+    private fun editorsForLocation(location: SourceLocation): List<SourceEditor> {
+        val result = ArrayList<SourceEditor>()
+        sourceEditors.forEach { e ->
+            when (location) {
+                is SourceEditor.EditorSourceLocation -> {
+                    if (location.editor === e) {
+                        result.add(e)
+                    }
+                }
+                is FileSourceLocation -> {
+                    val file = e.loaded
+                    if (file != null && location.normalisedFileName == file.canonicalPath) {
+                        result.add(e)
                     }
                 }
             }
         }
-
-    }
-
-    private fun initCustomFunctions() {
-        initGraphicCommands(this)
+        return result
     }
 
     private inner class ClientRenderContextImpl : ClientRenderContext {

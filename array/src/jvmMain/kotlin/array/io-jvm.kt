@@ -213,3 +213,7 @@ actual fun readDirectoryContent(dirName: String): List<PathEntry> {
     }
     return result
 }
+
+actual fun normaliseFileName(fileName: String): String {
+    return File(fileName).canonicalPath
+}

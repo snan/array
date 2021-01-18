@@ -148,3 +148,7 @@ actual fun readDirectoryContent(dirName: String): List<PathEntry> {
     }
     return result
 }
+
+actual fun normaliseFileName(fileName: String): String {
+    TODO("Not implemented")
+}
