@@ -256,14 +256,16 @@ class DisclosedArrayValue(value: APLValue, pos: Position) : APLArray() {
         val v = valueInt.valueAt(index)
 
         val innerIndex = p % cutoffMultiplier
+        val d = v.dimensions
         return if (innerIndex == 0) {
             when {
-                v is APLSingleValue -> v
-                v.dimensions.contentSize() == 0 -> v.defaultValue()
+                d.size == 0 -> v.disclose()
+                d.contentSize() == 0 -> v.defaultValue()
                 else -> v.valueAt(0)
             }
+//        } else if (d.size == 0) {
+//            v.defaultValue()
         } else {
-            val d = v.dimensions
             val position = Dimensions.positionFromIndexWithMultipliers(innerIndex, newDimensionsMultipliers)
             for (i in position.indices) {
                 if (position[i] >= d[i]) {
@@ -285,10 +287,7 @@ class DisclosedArrayValue(value: APLValue, pos: Position) : APLArray() {
                 elements = IntArray(dimensions.size) { i -> dimensions[i] }
             } else {
                 if (dimensions.size != elements!!.size) {
-                    throwAPLException(
-                        InvalidDimensionsException(
-                            "Not all elements in array have the same dimensions",
-                            pos))
+                    throwAPLException(InvalidDimensionsException("Not all elements in array have the same dimensions", pos))
                 }
                 for (i in 0 until elements!!.size) {
                     if (elements!![i] < dimensions[i]) {
